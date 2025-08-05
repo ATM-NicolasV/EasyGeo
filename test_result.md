@@ -272,7 +272,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Système de Scraping Automatique"
+    - "API Endpoints Refondus"
+    - "Interface Refaite - Scraping Automatique"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
