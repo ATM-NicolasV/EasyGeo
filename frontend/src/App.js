@@ -4,47 +4,57 @@ import './App.css';
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
 function App() {
-  const [activeTab, setActiveTab] = useState('analyze');
-  const [sources, setSources] = useState([]);
-  const [syntheses, setSyntheses] = useState([]);
-  const [glossary, setGlossary] = useState([]);
+  const [activeTab, setActiveTab] = useState('today');
   const [loading, setLoading] = useState(false);
   
-  // Analysis form state
-  const [urls, setUrls] = useState(['']);
-  const [topic, setTopic] = useState('');
-  const [aiProvider, setAiProvider] = useState('anthropic');
-  const [aiModel, setAiModel] = useState('claude-3-5-haiku-20241022');
+  // États pour les données
+  const [dailySynthesis, setDailySynthesis] = useState(null);
+  const [synthesisHistory, setSynthesisHistory] = useState([]);
+  const [sourcesStatus, setSourcesStatus] = useState([]);
+  const [glossary, setGlossary] = useState([]);
   
-  // Results state
-  const [currentSynthesis, setCurrentSynthesis] = useState(null);
-  const [selectedTerm, setSelectedTerm] = useState(null);
-
-  // Load data on component mount
+  // États pour l'administration
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  
+  // Charger les données au démarrage
   useEffect(() => {
-    loadSources();
-    loadSyntheses();
+    loadTodaySynthesis();
+    loadSynthesisHistory();
+    loadSourcesStatus();
     loadGlossary();
-    autoGenerateGlossary();
+    initializeDefaultSources();
   }, []);
 
-  const loadSources = async () => {
+  const loadTodaySynthesis = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sources`);
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/daily-synthesis`);
       const data = await response.json();
-      setSources(data.sources || []);
+      setDailySynthesis(data);
     } catch (error) {
-      console.error('Error loading sources:', error);
+      console.error('Erreur lors du chargement de la synthèse:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const loadSyntheses = async () => {
+  const loadSynthesisHistory = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/syntheses`);
+      const response = await fetch(`${API_BASE_URL}/api/daily-syntheses`);
       const data = await response.json();
-      setSyntheses(data.syntheses || []);
+      setSynthesisHistory(data.syntheses || []);
     } catch (error) {
-      console.error('Error loading syntheses:', error);
+      console.error('Erreur lors du chargement de l\'historique:', error);
+    }
+  };
+
+  const loadSourcesStatus = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sources-status`);
+      const data = await response.json();
+      setSourcesStatus(data.sources || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des sources:', error);
     }
   };
 
@@ -54,76 +64,56 @@ function App() {
       const data = await response.json();
       setGlossary(data.terms || []);
     } catch (error) {
-      console.error('Error loading glossary:', error);
+      console.error('Erreur lors du chargement du glossaire:', error);
     }
   };
 
-  const autoGenerateGlossary = async () => {
+  const initializeDefaultSources = async () => {
     try {
+      await fetch(`${API_BASE_URL}/api/init-default-sources`, { method: 'POST' });
       await fetch(`${API_BASE_URL}/api/auto-glossary`, { method: 'POST' });
-      loadGlossary(); // Refresh glossary
     } catch (error) {
-      console.error('Error auto-generating glossary:', error);
+      console.error('Erreur lors de l\'initialisation:', error);
     }
   };
 
-  const addUrl = () => {
-    setUrls([...urls, '']);
-  };
-
-  const removeUrl = (index) => {
-    const newUrls = urls.filter((_, i) => i !== index);
-    setUrls(newUrls.length > 0 ? newUrls : ['']);
-  };
-
-  const updateUrl = (index, value) => {
-    const newUrls = [...urls];
-    newUrls[index] = value;
-    setUrls(newUrls);
-  };
-
-  const analyzeContent = async () => {
-    if (!topic.trim() || urls.filter(url => url.trim()).length === 0) {
-      alert('Veuillez saisir un sujet et au moins une URL');
-      return;
-    }
-
-    setLoading(true);
+  const triggerManualScraping = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/analyze`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          urls: urls.filter(url => url.trim()),
-          topic: topic.trim(),
-          ai_settings: {
-            provider: aiProvider,
-            model: aiModel
-          }
-        }),
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/admin/scrape/manual`, { 
+        method: 'POST' 
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Erreur lors de l\'analyse');
-      }
-
-      const result = await response.json();
-      setCurrentSynthesis(result);
-      setActiveTab('results');
-      loadSyntheses(); // Refresh syntheses list
+      const data = await response.json();
+      alert(`Scraping terminé: ${data.new_articles} nouveaux articles trouvés`);
+      await loadSourcesStatus();
     } catch (error) {
-      console.error('Analysis error:', error);
-      alert(`Erreur lors de l'analyse: ${error.message}`);
+      console.error('Erreur lors du scraping manuel:', error);
+      alert('Erreur lors du scraping manuel');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const triggerManualSynthesis = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/admin/synthesis/manual`, { 
+        method: 'POST' 
+      });
+      const data = await response.json();
+      alert(`Synthèse générée avec succès (${data.articles_analyzed} articles analysés)`);
+      await loadTodaySynthesis();
+      await loadSynthesisHistory();
+    } catch (error) {
+      console.error('Erreur lors de la synthèse manuelle:', error);
+      alert('Erreur lors de la génération de synthèse');
     } finally {
       setLoading(false);
     }
   };
 
   const renderGlossaryTooltip = (text) => {
-    if (!glossary.length) return text;
+    if (!glossary.length || !text) return text;
 
     let processedText = text;
     glossary.forEach(term => {
@@ -136,165 +126,235 @@ function App() {
     return <div dangerouslySetInnerHTML={{ __html: processedText }} />;
   };
 
-  const AnalyzeTab = () => (
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  // Composant Synthèse du Jour
+  const TodayTab = () => (
     <div className="tab-content">
-      <div className="analyze-header">
-        <h2>Analyse Multi-Sources</h2>
-        <p>Analysez des articles provenant de différentes sources pour générer une synthèse neutre et factuelle.</p>
-      </div>
-
-      <div className="form-group">
-        <label>Sujet d'analyse *</label>
-        <input
-          type="text"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          placeholder="Ex: Élections européennes 2024, Conflit Ukraine-Russie..."
-          className="topic-input"
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Configuration IA</label>
-        <div className="ai-config">
-          <select value={aiProvider} onChange={(e) => setAiProvider(e.target.value)}>
-            <option value="anthropic">Anthropic Claude</option>
-            <option value="openai">OpenAI GPT</option>
-            <option value="gemini">Google Gemini</option>
-          </select>
-          
-          {aiProvider === 'anthropic' && (
-            <select value={aiModel} onChange={(e) => setAiModel(e.target.value)}>
-              <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Rapide)</option>
-              <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
-              <option value="claude-sonnet-4-20250514">Claude Sonnet 4 (Dernier)</option>
-              <option value="claude-opus-4-20250514">Claude Opus 4 (Premium)</option>
-            </select>
-          )}
+      <div className="today-header">
+        <h2>📰 Synthèse du Jour</h2>
+        <p>Analyse automatique des actualités politiques et géopolitiques</p>
+        <div className="last-update">
+          Dernière mise à jour: {new Date().toLocaleTimeString('fr-FR')}
         </div>
       </div>
 
-      <div className="form-group">
-        <label>Sources d'information *</label>
-        {urls.map((url, index) => (
-          <div key={index} className="url-input-group">
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => updateUrl(index, e.target.value)}
-              placeholder="https://exemple.com/article"
-              className="url-input"
-            />
-            {urls.length > 1 && (
-              <button type="button" onClick={() => removeUrl(index)} className="remove-btn">
-                ×
-              </button>
-            )}
-          </div>
-        ))}
-        <button type="button" onClick={addUrl} className="add-url-btn">
-          + Ajouter une source
-        </button>
-      </div>
-
-      <button 
-        onClick={analyzeContent} 
-        disabled={loading}
-        className="analyze-btn"
-      >
-        {loading ? 'Analyse en cours...' : 'Analyser les sources'}
-      </button>
-    </div>
-  );
-
-  const ResultsTab = () => (
-    <div className="tab-content">
-      <h2>Résultats d'analyse</h2>
-      {currentSynthesis ? (
-        <div className="synthesis-result">
-          <div className="synthesis-header">
-            <h3>{currentSynthesis.topic}</h3>
-            <div className="synthesis-meta">
-              <span className="sources-count">{currentSynthesis.sources_count} sources analysées</span>
-              <span className="reliability-score">
-                Fiabilité: {Math.round(currentSynthesis.reliability_score * 100)}%
-              </span>
-            </div>
-          </div>
-          
-          <div className="synthesis-content">
-            {renderGlossaryTooltip(currentSynthesis.article)}
-          </div>
-          
-          <div className="sources-used">
-            <h4>Sources utilisées:</h4>
-            <ul>
-              {currentSynthesis.sources_used.map((source, index) => (
-                <li key={index}>
-                  <a href={source} target="_blank" rel="noopener noreferrer">
-                    {source}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+      {loading ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Chargement de la synthèse...</p>
         </div>
       ) : (
-        <div className="no-results">
-          <p>Aucune analyse disponible. Utilisez l'onglet "Analyser" pour commencer.</p>
-        </div>
+        <>
+          {dailySynthesis?.synthesis ? (
+            <div className="synthesis-container">
+              <div className="synthesis-meta">
+                <div className="meta-item">
+                  <span className="meta-label">Date:</span>
+                  <span className="meta-value">{formatDate(dailySynthesis.synthesis.date)}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Sources analysées:</span>
+                  <span className="meta-value">{dailySynthesis.synthesis.sources_count}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Fiabilité:</span>
+                  <span className="meta-value reliability-score">
+                    {Math.round(dailySynthesis.synthesis.reliability_score * 100)}%
+                  </span>
+                </div>
+              </div>
+
+              {dailySynthesis.synthesis.themes && dailySynthesis.synthesis.themes.length > 0 && (
+                <div className="themes-container">
+                  <h4>🏷️ Thèmes abordés:</h4>
+                  <div className="themes-list">
+                    {dailySynthesis.synthesis.themes.map((theme, index) => (
+                      <span key={index} className="theme-tag">{theme}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="synthesis-content">
+                <h3>{dailySynthesis.synthesis.title}</h3>
+                <div className="content-text">
+                  {renderGlossaryTooltip(dailySynthesis.synthesis.content)}
+                </div>
+              </div>
+
+              <div className="sources-breakdown">
+                <h4>📊 Répartition des sources:</h4>
+                <div className="sources-stats">
+                  {Object.entries(dailySynthesis.synthesis.sources_breakdown || {}).map(([source, count]) => (
+                    <div key={source} className="source-stat">
+                      <span className="source-name">{source}</span>
+                      <span className="source-count">{count} article{count > 1 ? 's' : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="no-synthesis">
+              <div className="no-content-icon">📝</div>
+              <h3>Aucune synthèse disponible</h3>
+              <p>La synthèse automatique est en cours de génération ou aucun article politique n'a été trouvé aujourd'hui.</p>
+              
+              {isAdminMode && (
+                <div className="admin-actions">
+                  <button onClick={triggerManualScraping} disabled={loading} className="admin-btn">
+                    🔄 Lancer le scraping
+                  </button>
+                  <button onClick={triggerManualSynthesis} disabled={loading} className="admin-btn">
+                    ⚡ Générer la synthèse
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 
+  // Composant Historique
   const HistoryTab = () => (
     <div className="tab-content">
-      <h2>Historique des analyses</h2>
-      {syntheses.length > 0 ? (
-        <div className="syntheses-list">
-          {syntheses.map((synthesis) => (
-            <div key={synthesis.id} className="synthesis-card">
-              <h3>{synthesis.topic}</h3>
-              <p>{synthesis.article}</p>
-              <div className="synthesis-footer">
-                <span>{synthesis.sources_count} sources</span>
-                <span>Fiabilité: {Math.round(synthesis.reliability_score * 100)}%</span>
-                <button 
-                  onClick={() => {
-                    setCurrentSynthesis(synthesis);
-                    setActiveTab('results');
-                  }}
-                  className="view-btn"
-                >
-                  Voir détails
-                </button>
+      <h2>📚 Historique des Synthèses</h2>
+      
+      {synthesisHistory.length > 0 ? (
+        <div className="history-list">
+          {synthesisHistory.map((synthesis) => (
+            <div key={synthesis.id} className="history-item">
+              <div className="history-header">
+                <h3>{synthesis.title}</h3>
+                <div className="history-date">{formatDate(synthesis.date)}</div>
               </div>
+              
+              <div className="history-meta">
+                <span className="sources-count">{synthesis.sources_count} sources</span>
+                <span className="reliability-score">
+                  Fiabilité: {Math.round(synthesis.reliability_score * 100)}%
+                </span>
+                {synthesis.themes && synthesis.themes.length > 0 && (
+                  <div className="themes-preview">
+                    {synthesis.themes.slice(0, 3).map((theme, index) => (
+                      <span key={index} className="theme-tag-small">{theme}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div className="history-preview">
+                {synthesis.preview}
+              </div>
+              
+              <button 
+                onClick={() => {
+                  setDailySynthesis({ synthesis });
+                  setActiveTab('today');
+                }}
+                className="view-synthesis-btn"
+              >
+                Voir la synthèse complète
+              </button>
             </div>
           ))}
         </div>
       ) : (
         <div className="no-history">
-          <p>Aucun historique disponible.</p>
+          <div className="no-content-icon">📖</div>
+          <h3>Aucun historique</h3>
+          <p>Les synthèses quotidiennes apparaîtront ici au fur et à mesure.</p>
         </div>
       )}
     </div>
   );
 
+  // Composant Sources
+  const SourcesTab = () => (
+    <div className="tab-content">
+      <h2>🔗 Sources d'Information</h2>
+      <p>Surveillance automatique des actualités politiques et géopolitiques</p>
+      
+      <div className="sources-status">
+        {sourcesStatus.map((source) => (
+          <div key={source.id} className="source-card">
+            <div className="source-header">
+              <h3>{source.name}</h3>
+              <div className={`status-indicator ${source.is_active ? 'active' : 'inactive'}`}>
+                {source.is_active ? '🟢 Actif' : '🔴 Inactif'}
+              </div>
+            </div>
+            
+            <p className="source-description">{source.description}</p>
+            
+            <div className="source-stats">
+              <div className="stat-item">
+                <span className="stat-label">Articles aujourd'hui:</span>
+                <span className="stat-value">{source.today_articles || 0}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Total récupérés:</span>
+                <span className="stat-value">{source.articles_scraped || 0}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Dernier scraping:</span>
+                <span className="stat-value">
+                  {source.last_scrape ? new Date(source.last_scrape).toLocaleTimeString('fr-FR') : 'Jamais'}
+                </span>
+              </div>
+            </div>
+            
+            <a href={source.url} target="_blank" rel="noopener noreferrer" className="source-link">
+              Visiter le site →
+            </a>
+          </div>
+        ))}
+      </div>
+      
+      {isAdminMode && (
+        <div className="admin-section">
+          <h4>🔧 Actions Administrateur</h4>
+          <div className="admin-buttons">
+            <button onClick={triggerManualScraping} disabled={loading} className="admin-btn">
+              🔄 Scraping manuel
+            </button>
+            <button onClick={loadSourcesStatus} className="admin-btn">
+              📊 Actualiser les stats
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Composant Glossaire
   const GlossaryTab = () => (
     <div className="tab-content">
-      <h2>Glossaire Politique & Géopolitique</h2>
-      <p>Survolez les termes dans les articles pour voir leurs définitions automatiquement.</p>
+      <h2>📖 Glossaire Politique & Géopolitique</h2>
+      <p>Définitions des termes complexes pour mieux comprendre l'actualité</p>
       
       {glossary.length > 0 ? (
-        <div className="glossary-list">
+        <div className="glossary-grid">
           {glossary.map((term) => (
-            <div key={term.id} className="glossary-item">
-              <h4>{term.term}</h4>
-              <p>{term.definition}</p>
+            <div key={term.id} className="glossary-card">
+              <h4 className="glossary-term">{term.term}</h4>
+              <p className="glossary-definition">{term.definition}</p>
               {term.detailed_explanation && (
-                <details>
+                <details className="glossary-details">
                   <summary>En savoir plus</summary>
-                  <p>{term.detailed_explanation}</p>
+                  <p className="glossary-explanation">{term.detailed_explanation}</p>
                 </details>
               )}
             </div>
@@ -302,6 +362,7 @@ function App() {
         </div>
       ) : (
         <div className="no-glossary">
+          <div className="no-content-icon">📚</div>
           <p>Chargement du glossaire...</p>
         </div>
       )}
@@ -311,28 +372,41 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <h1>Analyseur Politique Neutre</h1>
-        <p>Synthèse factuelle et neutre de l'actualité politique et géopolitique</p>
+        <div className="header-content">
+          <div className="header-left">
+            <h1>🏛️ Analyseur Politique Automatique</h1>
+            <p>Synthèse quotidienne neutre et factuelle de l'actualité</p>
+          </div>
+          <div className="header-right">
+            <button 
+              onClick={() => setIsAdminMode(!isAdminMode)} 
+              className={`admin-toggle ${isAdminMode ? 'active' : ''}`}
+              title="Mode administrateur"
+            >
+              ⚙️
+            </button>
+          </div>
+        </div>
       </header>
 
       <nav className="nav-tabs">
         <button 
-          className={activeTab === 'analyze' ? 'tab active' : 'tab'}
-          onClick={() => setActiveTab('analyze')}
+          className={activeTab === 'today' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('today')}
         >
-          📊 Analyser
-        </button>
-        <button 
-          className={activeTab === 'results' ? 'tab active' : 'tab'}
-          onClick={() => setActiveTab('results')}
-        >
-          📄 Résultats
+          📰 Aujourd'hui
         </button>
         <button 
           className={activeTab === 'history' ? 'tab active' : 'tab'}
           onClick={() => setActiveTab('history')}
         >
           📚 Historique
+        </button>
+        <button 
+          className={activeTab === 'sources' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('sources')}
+        >
+          🔗 Sources
         </button>
         <button 
           className={activeTab === 'glossary' ? 'tab active' : 'tab'}
@@ -343,14 +417,21 @@ function App() {
       </nav>
 
       <main className="main-content">
-        {activeTab === 'analyze' && <AnalyzeTab />}
-        {activeTab === 'results' && <ResultsTab />}
+        {activeTab === 'today' && <TodayTab />}
         {activeTab === 'history' && <HistoryTab />}
+        {activeTab === 'sources' && <SourcesTab />}
         {activeTab === 'glossary' && <GlossaryTab />}
       </main>
 
       <footer className="app-footer">
-        <p>Outil d'analyse neutre pour une meilleure compréhension de l'actualité</p>
+        <div className="footer-content">
+          <p>🤖 Scraping automatique toutes les heures • 🎯 Filtrage politique/géopolitique • ⚖️ Analyse neutre par IA</p>
+          <div className="footer-info">
+            <span>Sources: Le Monde, BFM Business, Blast</span>
+            <span>•</span>
+            <span>IA: Claude 3.5 Haiku</span>
+          </div>
+        </div>
       </footer>
     </div>
   );
