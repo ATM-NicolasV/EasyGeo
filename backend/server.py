@@ -152,7 +152,107 @@ async def analyze_with_claude(content: str, task: str, ai_settings: AIProvider) 
 # API Endpoints
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "service": "political-analyzer"}
+    return {"status": "healthy", "service": "political-analyzer", "version": "2.0.0"}
+
+# Nouveaux endpoints pour l'interface utilisateur
+
+@app.get("/api/daily-synthesis")
+async def get_daily_synthesis(date: Optional[str] = None):
+    """Récupérer la synthèse quotidienne"""
+    
+    # Si pas de date spécifiée, prendre aujourd'hui
+    if not date:
+        date = datetime.now().strftime("%Y-%m-%d")
+    
+    # Récupérer la synthèse du jour
+    synthesis = await daily_syntheses_collection.find_one(
+        {"date": date},
+        sort=[("created_at", -1)]  # La plus récente si plusieurs
+    )
+    
+    if not synthesis:
+        # Pas de synthèse pour ce jour
+        return {
+            "date": date,
+            "synthesis": None,
+            "message": "Aucune synthèse disponible pour cette date"
+        }
+    
+    # Nettoyer l'objet MongoDB
+    if "_id" in synthesis:
+        del synthesis["_id"]
+    
+    return {
+        "date": date,
+        "synthesis": synthesis
+    }
+
+@app.get("/api/daily-syntheses")
+async def get_daily_syntheses_history(limit: int = 30):
+    """Récupérer l'historique des synthèses quotidiennes"""
+    
+    syntheses = []
+    cursor = daily_syntheses_collection.find().sort("created_at", -1).limit(limit)
+    
+    async for synthesis in cursor:
+        if "_id" in synthesis:
+            del synthesis["_id"]
+        
+        # Résumé pour la liste
+        syntheses.append({
+            "id": synthesis.get("id"),
+            "date": synthesis.get("date"),
+            "title": synthesis.get("title"),
+            "sources_count": synthesis.get("sources_count", 0),
+            "themes": synthesis.get("themes", []),
+            "reliability_score": synthesis.get("reliability_score", 0),
+            "created_at": synthesis.get("created_at"),
+            "preview": synthesis.get("content", "")[:200] + "..." if synthesis.get("content") else ""
+        })
+    
+    return {
+        "syntheses": syntheses,
+        "total": len(syntheses)
+    }
+
+@app.get("/api/daily-synthesis/{synthesis_id}")
+async def get_specific_daily_synthesis(synthesis_id: str):
+    """Récupérer une synthèse spécifique"""
+    
+    synthesis = await daily_syntheses_collection.find_one({"id": synthesis_id})
+    
+    if not synthesis:
+        raise HTTPException(status_code=404, detail="Synthèse non trouvée")
+    
+    if "_id" in synthesis:
+        del synthesis["_id"]
+    
+    return synthesis
+
+@app.get("/api/sources-status")
+async def get_sources_status():
+    """Récupérer le statut des sources configurées"""
+    
+    sources = []
+    async for source in news_sources_collection.find():
+        if "_id" in source:
+            del source["_id"]
+        sources.append(source)
+    
+    # Compter les articles par source aujourd'hui
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    for source in sources:
+        article_count = await scraped_articles_collection.count_documents({
+            "source": source["name"],
+            "scraped_at": {"$gte": today_start}
+        })
+        source["today_articles"] = article_count
+    
+    return {
+        "sources": sources,
+        "last_updated": datetime.now()
+    }
 
 @app.post("/api/sources")
 async def add_source(source: SourceURL):
