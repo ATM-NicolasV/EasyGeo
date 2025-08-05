@@ -275,6 +275,9 @@ async def get_syntheses():
     """Get all syntheses"""
     syntheses = []
     async for synthesis in syntheses_collection.find().sort("created_at", -1):
+        # Remove MongoDB ObjectId to avoid serialization issues
+        if "_id" in synthesis:
+            del synthesis["_id"]
         syntheses.append({
             "id": synthesis["id"],
             "topic": synthesis["topic"],
