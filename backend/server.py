@@ -11,7 +11,41 @@ import html2text
 import uuid
 from typing import List, Optional, Dict, Any
 import logging
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+try:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+except ImportError as e:
+    print(f"Warning: Could not import emergentintegrations: {e}")
+    # Create fallback classes
+    class LlmChat:
+        def __init__(self, api_key, session_id, system_message):
+            self.api_key = api_key
+            self.session_id = session_id
+            self.system_message = system_message
+            
+        def with_model(self, provider, model):
+            self.provider = provider
+            self.model = model
+            return self
+            
+        def with_max_tokens(self, tokens):
+            self.max_tokens = tokens
+            return self
+            
+        async def send_message(self, message):
+            # Fallback implementation using direct API call
+            import anthropic
+            client = anthropic.AsyncAnthropic(api_key=self.api_key)
+            response = await client.messages.create(
+                model=self.model,
+                max_tokens=self.max_tokens,
+                system=self.system_message,
+                messages=[{"role": "user", "content": message.text}]
+            )
+            return response.content[0].text
+    
+    class UserMessage:
+        def __init__(self, text):
+            self.text = text
 import json
 from datetime import datetime, timedelta
 import re
