@@ -1,0 +1,293 @@
+#!/usr/bin/env python3
+"""
+Comprehensive Backend Testing for Political Analysis Application
+Tests all core backend functionality including Claude AI integration, content extraction, and database operations.
+"""
+
+import asyncio
+import aiohttp
+import json
+import sys
+from datetime import datetime
+from typing import Dict, List, Any
+
+# Backend URL from frontend environment
+BACKEND_URL = "https://147bccbd-5112-4261-a897-267738d94413.preview.emergentagent.com/api"
+
+class BackendTester:
+    def __init__(self):
+        self.session = None
+        self.test_results = []
+        self.failed_tests = []
+        
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession()
+        return self
+        
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+    
+    def log_test(self, test_name: str, success: bool, details: str = "", response_data: Any = None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "details": details,
+            "timestamp": datetime.now().isoformat(),
+            "response_data": response_data
+        }
+        self.test_results.append(result)
+        
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} - {test_name}")
+        if details:
+            print(f"    Details: {details}")
+        if not success:
+            self.failed_tests.append(test_name)
+        print()
+    
+    async def test_health_check(self):
+        """Test the health check endpoint"""
+        try:
+            async with self.session.get(f"{BACKEND_URL}/health") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("status") == "healthy":
+                        self.log_test("Health Check", True, f"Service is healthy: {data}")
+                        return True
+                    else:
+                        self.log_test("Health Check", False, f"Unexpected response: {data}")
+                        return False
+                else:
+                    self.log_test("Health Check", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Health Check", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_auto_glossary_generation(self):
+        """Test auto-generation of glossary terms"""
+        try:
+            # First, generate auto glossary
+            async with self.session.post(f"{BACKEND_URL}/auto-glossary") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_test("Auto Glossary Generation", True, f"Generated terms: {data.get('message', 'Success')}")
+                    
+                    # Now test retrieving glossary
+                    async with self.session.get(f"{BACKEND_URL}/glossary") as get_response:
+                        if get_response.status == 200:
+                            glossary_data = await get_response.json()
+                            terms_count = len(glossary_data.get("terms", []))
+                            self.log_test("Glossary Retrieval", True, f"Retrieved {terms_count} terms")
+                            return True
+                        else:
+                            self.log_test("Glossary Retrieval", False, f"HTTP {get_response.status}")
+                            return False
+                else:
+                    self.log_test("Auto Glossary Generation", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Auto Glossary Generation", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_manual_glossary_operations(self):
+        """Test manual glossary CRUD operations"""
+        try:
+            # Add a test term
+            test_term = {
+                "term": "Test Politique",
+                "definition": "Terme de test pour l'analyse politique",
+                "detailed_explanation": "Explication détaillée du terme de test"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/glossary", json=test_term) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_test("Manual Glossary Add", True, f"Added term: {data.get('message', 'Success')}")
+                    
+                    # Test retrieving specific term
+                    async with self.session.get(f"{BACKEND_URL}/glossary/test politique") as get_response:
+                        if get_response.status == 200:
+                            term_data = await get_response.json()
+                            self.log_test("Glossary Term Retrieval", True, f"Retrieved term: {term_data.get('term', 'Unknown')}")
+                            return True
+                        else:
+                            self.log_test("Glossary Term Retrieval", False, f"HTTP {get_response.status}")
+                            return False
+                else:
+                    self.log_test("Manual Glossary Add", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Manual Glossary Operations", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_sources_operations(self):
+        """Test source management operations"""
+        try:
+            # Add a test source
+            test_source = {
+                "url": "https://www.bbc.com/news",
+                "description": "BBC News - Test Source"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/sources", json=test_source) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_test("Source Addition", True, f"Added source: {data.get('message', 'Success')}")
+                    
+                    # Test retrieving sources
+                    async with self.session.get(f"{BACKEND_URL}/sources") as get_response:
+                        if get_response.status == 200:
+                            sources_data = await get_response.json()
+                            sources_count = len(sources_data.get("sources", []))
+                            self.log_test("Sources Retrieval", True, f"Retrieved {sources_count} sources")
+                            return True
+                        else:
+                            self.log_test("Sources Retrieval", False, f"HTTP {get_response.status}")
+                            return False
+                else:
+                    self.log_test("Source Addition", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Sources Operations", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_content_extraction_and_analysis(self):
+        """Test the core analysis functionality with real URLs"""
+        try:
+            # Test with real news URLs
+            test_urls = [
+                "https://www.bbc.com/news",
+                "https://www.lemonde.fr"
+            ]
+            
+            analysis_request = {
+                "urls": test_urls,
+                "topic": "Actualités politiques internationales",
+                "ai_settings": {
+                    "provider": "anthropic",
+                    "model": "claude-3-5-haiku-20241022"
+                }
+            }
+            
+            print("Testing content extraction and Claude AI analysis...")
+            print("This may take 30-60 seconds due to web scraping and AI processing...")
+            
+            async with self.session.post(f"{BACKEND_URL}/analyze", json=analysis_request, timeout=aiohttp.ClientTimeout(total=120)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    synthesis_id = data.get("synthesis_id")
+                    sources_count = data.get("sources_count", 0)
+                    reliability_score = data.get("reliability_score", 0)
+                    
+                    self.log_test("Content Extraction & Analysis", True, 
+                                f"Analysis completed - Sources: {sources_count}, Reliability: {reliability_score:.2f}, Synthesis ID: {synthesis_id}")
+                    
+                    # Test retrieving the synthesis
+                    if synthesis_id:
+                        async with self.session.get(f"{BACKEND_URL}/syntheses/{synthesis_id}") as get_response:
+                            if get_response.status == 200:
+                                synthesis_data = await get_response.json()
+                                self.log_test("Synthesis Retrieval", True, f"Retrieved synthesis for topic: {synthesis_data.get('topic', 'Unknown')}")
+                                return True
+                            else:
+                                self.log_test("Synthesis Retrieval", False, f"HTTP {get_response.status}")
+                                return False
+                    else:
+                        self.log_test("Content Extraction & Analysis", False, "No synthesis ID returned")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_test("Content Extraction & Analysis", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except asyncio.TimeoutError:
+            self.log_test("Content Extraction & Analysis", False, "Request timed out (>120s)")
+            return False
+        except Exception as e:
+            self.log_test("Content Extraction & Analysis", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_syntheses_operations(self):
+        """Test synthesis listing operations"""
+        try:
+            async with self.session.get(f"{BACKEND_URL}/syntheses") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    syntheses_count = len(data.get("syntheses", []))
+                    self.log_test("Syntheses Listing", True, f"Retrieved {syntheses_count} syntheses")
+                    return True
+                else:
+                    self.log_test("Syntheses Listing", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Syntheses Listing", False, f"Exception: {str(e)}")
+            return False
+    
+    async def run_all_tests(self):
+        """Run all backend tests in sequence"""
+        print("=" * 80)
+        print("POLITICAL ANALYSIS BACKEND COMPREHENSIVE TESTING")
+        print("=" * 80)
+        print(f"Testing backend at: {BACKEND_URL}")
+        print(f"Started at: {datetime.now().isoformat()}")
+        print()
+        
+        # Test sequence
+        tests = [
+            ("Health Check", self.test_health_check),
+            ("Auto Glossary Generation", self.test_auto_glossary_generation),
+            ("Manual Glossary Operations", self.test_manual_glossary_operations),
+            ("Sources Operations", self.test_sources_operations),
+            ("Syntheses Listing", self.test_syntheses_operations),
+            ("Content Extraction & Claude AI Analysis", self.test_content_extraction_and_analysis),
+        ]
+        
+        passed = 0
+        total = len(tests)
+        
+        for test_name, test_func in tests:
+            print(f"Running: {test_name}")
+            try:
+                success = await test_func()
+                if success:
+                    passed += 1
+            except Exception as e:
+                self.log_test(test_name, False, f"Unexpected error: {str(e)}")
+        
+        # Summary
+        print("=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        print(f"Total Tests: {total}")
+        print(f"Passed: {passed}")
+        print(f"Failed: {total - passed}")
+        print(f"Success Rate: {(passed/total)*100:.1f}%")
+        print()
+        
+        if self.failed_tests:
+            print("FAILED TESTS:")
+            for failed_test in self.failed_tests:
+                print(f"  ❌ {failed_test}")
+        else:
+            print("🎉 ALL TESTS PASSED!")
+        
+        print()
+        print(f"Completed at: {datetime.now().isoformat()}")
+        
+        return passed, total, self.test_results
+
+async def main():
+    """Main test execution"""
+    async with BackendTester() as tester:
+        passed, total, results = await tester.run_all_tests()
+        
+        # Return exit code based on results
+        if passed == total:
+            sys.exit(0)  # All tests passed
+        else:
+            sys.exit(1)  # Some tests failed
+
+if __name__ == "__main__":
+    asyncio.run(main())
