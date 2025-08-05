@@ -246,3 +246,5 @@ agent_communication:
     message: "Created complete political analysis app with Claude integration. Backend has all core endpoints implemented, frontend has modern UI with 4 tabs. Ready for comprehensive backend testing to verify API functionality."
   - agent: "testing"
     message: "✅ BACKEND TESTING COMPLETE: All 5 backend tasks tested successfully with 100% pass rate. Fixed MongoDB ObjectId serialization issue during testing. Core functionality verified: Claude AI integration, content extraction from real news URLs, analysis pipeline, database operations, and glossary system. Backend is fully functional and ready for production use."
+  - agent: "main"
+    message: "REFONTE MAJEURE EN COURS: L'utilisateur a demandé de transformer l'application de 'saisie manuelle d'URLs' vers 'scraping automatique toutes les heures des sources BFM/Le Monde/Blast'. Implémentation d'un système de scraping automatique, filtrage politique/géopolitique/complotisme, synthèse quotidienne automatique, et interface admin pour gérer les sources."
