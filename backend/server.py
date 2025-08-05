@@ -329,6 +329,9 @@ async def get_glossary():
     """Get all glossary terms"""
     terms = []
     async for term in glossary_collection.find().sort("term", 1):
+        # Remove MongoDB ObjectId to avoid serialization issues
+        if "_id" in term:
+            del term["_id"]
         terms.append({
             "id": term["id"],
             "term": term["display_term"],
