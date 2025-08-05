@@ -292,6 +292,10 @@ async def get_synthesis(synthesis_id: str):
     if not synthesis:
         raise HTTPException(status_code=404, detail="Synthesis not found")
     
+    # Remove MongoDB ObjectId to avoid serialization issues
+    if "_id" in synthesis:
+        del synthesis["_id"]
+    
     return synthesis
 
 @app.post("/api/glossary")
