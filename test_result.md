@@ -287,3 +287,5 @@ agent_communication:
     message: "✅ BACKEND TESTING COMPLETE: All 5 backend tasks tested successfully with 100% pass rate. Fixed MongoDB ObjectId serialization issue during testing. Core functionality verified: Claude AI integration, content extraction from real news URLs, analysis pipeline, database operations, and glossary system. Backend is fully functional and ready for production use."
   - agent: "main"
     message: "REFONTE MAJEURE EN COURS: L'utilisateur a demandé de transformer l'application de 'saisie manuelle d'URLs' vers 'scraping automatique toutes les heures des sources BFM/Le Monde/Blast'. Implémentation d'un système de scraping automatique, filtrage politique/géopolitique/complotisme, synthèse quotidienne automatique, et interface admin pour gérer les sources."
+  - agent: "main"
+    message: "REFONTE TERMINÉE: Créé système complet de scraping automatique (scraper.py, scheduler.py), refait tous les endpoints API (server.py, admin_routes.py), et refait l'interface utilisateur (App.js, App.css). Prêt pour test backend du nouveau système."
