@@ -205,6 +205,18 @@ backend:
         comment: "✅ TESTED: Database operations working correctly. All CRUD operations tested for articles, syntheses, glossary, and sources collections. Fixed MongoDB ObjectId serialization issue for proper JSON responses."
 
 frontend:
+  - task: "Interface Refaite - Scraping Automatique"
+    implemented: true
+    working: "NA"
+    file: "App.js, App.css"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Refonte complète UI: onglets Aujourd'hui (synthèse du jour), Historique, Sources, Glossaire. Supprimé saisie manuelle URLs. Interface admin pour gestion sources."
+
   - task: "Multi-tab Interface"
     implemented: true
     working: "NA" # needs testing
