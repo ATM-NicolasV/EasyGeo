@@ -511,6 +511,66 @@ async def auto_generate_glossary(background_tasks: BackgroundTasks):
     
     return {"message": f"Auto-generated {len(terms_to_add)} glossary terms"}
 
+# Endpoint pour initialiser les sources par défaut
+@app.post("/api/init-default-sources")
+async def initialize_default_sources():
+    """Initialiser les sources par défaut (Le Monde, BFM, Blast)"""
+    
+    default_sources = [
+        {
+            "id": str(uuid.uuid4()),
+            "name": "Le Monde",
+            "url": "https://www.lemonde.fr",
+            "description": "Journal français de référence",
+            "scraper_type": "lemonde",
+            "is_active": True,
+            "css_selectors": {},
+            "created_at": datetime.now(),
+            "updated_at": datetime.now(),
+            "articles_scraped": 0,
+            "last_scrape": None
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "name": "BFM Business",
+            "url": "https://www.bfmtv.com",
+            "description": "Chaîne d'information économique",
+            "scraper_type": "bfm",
+            "is_active": True,
+            "css_selectors": {},
+            "created_at": datetime.now(),
+            "updated_at": datetime.now(),
+            "articles_scraped": 0,
+            "last_scrape": None
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "name": "Blast",
+            "url": "https://www.blast-info.fr",
+            "description": "Media indépendant d'investigation",
+            "scraper_type": "blast",
+            "is_active": True,
+            "css_selectors": {},
+            "created_at": datetime.now(),
+            "updated_at": datetime.now(),
+            "articles_scraped": 0,
+            "last_scrape": None
+        }
+    ]
+    
+    sources_added = 0
+    for source_data in default_sources:
+        # Vérifier si la source existe déjà
+        existing = await news_sources_collection.find_one({"name": source_data["name"]})
+        if not existing:
+            await news_sources_collection.insert_one(source_data)
+            sources_added += 1
+    
+    return {
+        "message": f"Initialisé {sources_added} sources par défaut",
+        "sources": [s["name"] for s in default_sources]
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
