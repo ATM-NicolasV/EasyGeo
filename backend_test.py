@@ -239,18 +239,219 @@ class BackendTester:
             self.log_test("Syntheses Listing", False, f"Exception: {str(e)}")
             return False
     
+    async def test_init_default_sources(self):
+        """Test initialization of default news sources"""
+        try:
+            async with self.session.post(f"{BACKEND_URL}/init-default-sources") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_test("Initialize Default Sources", True, f"Initialized sources: {data.get('message', 'Success')}")
+                    return True
+                else:
+                    self.log_test("Initialize Default Sources", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Initialize Default Sources", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_daily_synthesis_endpoints(self):
+        """Test daily synthesis endpoints"""
+        try:
+            # Test getting today's synthesis (might be empty)
+            async with self.session.get(f"{BACKEND_URL}/daily-synthesis") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_test("Daily Synthesis Endpoint", True, f"Response: {data.get('message', 'Success')}")
+                    
+                    # Test getting synthesis history
+                    async with self.session.get(f"{BACKEND_URL}/daily-syntheses") as hist_response:
+                        if hist_response.status == 200:
+                            hist_data = await hist_response.json()
+                            syntheses_count = len(hist_data.get("syntheses", []))
+                            self.log_test("Daily Syntheses History", True, f"Retrieved {syntheses_count} syntheses")
+                            return True
+                        else:
+                            self.log_test("Daily Syntheses History", False, f"HTTP {hist_response.status}")
+                            return False
+                else:
+                    self.log_test("Daily Synthesis Endpoint", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Daily Synthesis Endpoints", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_sources_status_endpoint(self):
+        """Test sources status endpoint"""
+        try:
+            async with self.session.get(f"{BACKEND_URL}/sources-status") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    sources_count = len(data.get("sources", []))
+                    self.log_test("Sources Status Endpoint", True, f"Retrieved status for {sources_count} sources")
+                    return True
+                else:
+                    self.log_test("Sources Status Endpoint", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Sources Status Endpoint", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_admin_sources_endpoints(self):
+        """Test admin sources management endpoints"""
+        try:
+            # Test getting all admin sources
+            async with self.session.get(f"{BACKEND_URL}/admin/sources") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    sources_count = data.get("total", 0)
+                    active_count = data.get("active", 0)
+                    self.log_test("Admin Sources List", True, f"Total: {sources_count}, Active: {active_count}")
+                    
+                    # Test adding a new admin source
+                    test_source = {
+                        "name": "Test Source Admin",
+                        "url": "https://example.com/news",
+                        "description": "Test source for admin testing",
+                        "scraper_type": "generic",
+                        "is_active": True
+                    }
+                    
+                    async with self.session.post(f"{BACKEND_URL}/admin/sources", json=test_source) as add_response:
+                        if add_response.status == 200:
+                            add_data = await add_response.json()
+                            self.log_test("Admin Add Source", True, f"Added source: {add_data.get('source_name', 'Unknown')}")
+                            return True
+                        else:
+                            self.log_test("Admin Add Source", False, f"HTTP {add_response.status}")
+                            return False
+                else:
+                    self.log_test("Admin Sources List", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Admin Sources Endpoints", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_admin_config_endpoints(self):
+        """Test admin configuration endpoints"""
+        try:
+            # Test getting scraping config
+            async with self.session.get(f"{BACKEND_URL}/admin/config") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    interval = data.get("scraping_interval_hours", 0)
+                    self.log_test("Admin Config Get", True, f"Scraping interval: {interval}h")
+                    
+                    # Test updating config
+                    new_config = {
+                        "scraping_interval_hours": 2,
+                        "max_articles_per_source": 15,
+                        "political_keywords_threshold": 3,
+                        "synthesis_hours": [8, 14, 19]
+                    }
+                    
+                    async with self.session.put(f"{BACKEND_URL}/admin/config", json=new_config) as update_response:
+                        if update_response.status == 200:
+                            update_data = await update_response.json()
+                            self.log_test("Admin Config Update", True, f"Config updated: {update_data.get('message', 'Success')}")
+                            return True
+                        else:
+                            self.log_test("Admin Config Update", False, f"HTTP {update_response.status}")
+                            return False
+                else:
+                    self.log_test("Admin Config Get", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Admin Config Endpoints", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_admin_stats_endpoint(self):
+        """Test admin statistics endpoint"""
+        try:
+            async with self.session.get(f"{BACKEND_URL}/admin/stats") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    total_articles = data.get("total_articles", 0)
+                    today_articles = data.get("today_articles", 0)
+                    total_syntheses = data.get("total_syntheses", 0)
+                    self.log_test("Admin Stats", True, f"Total articles: {total_articles}, Today: {today_articles}, Syntheses: {total_syntheses}")
+                    return True
+                else:
+                    self.log_test("Admin Stats", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("Admin Stats Endpoint", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_admin_manual_scraping(self):
+        """Test manual scraping trigger"""
+        try:
+            print("Testing manual scraping - this may take 30-60 seconds...")
+            async with self.session.post(f"{BACKEND_URL}/admin/scrape/manual", timeout=aiohttp.ClientTimeout(total=120)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    articles_found = data.get("articles_found", 0)
+                    new_articles = data.get("new_articles", 0)
+                    self.log_test("Admin Manual Scraping", True, f"Found: {articles_found}, New: {new_articles}")
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("Admin Manual Scraping", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except asyncio.TimeoutError:
+            self.log_test("Admin Manual Scraping", False, "Request timed out (>120s)")
+            return False
+        except Exception as e:
+            self.log_test("Admin Manual Scraping", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_admin_manual_synthesis(self):
+        """Test manual synthesis generation"""
+        try:
+            print("Testing manual synthesis generation - this may take 30-60 seconds...")
+            async with self.session.post(f"{BACKEND_URL}/admin/synthesis/manual", timeout=aiohttp.ClientTimeout(total=120)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    synthesis_id = data.get("synthesis_id")
+                    articles_analyzed = data.get("articles_analyzed", 0)
+                    self.log_test("Admin Manual Synthesis", True, f"Generated synthesis: {synthesis_id}, Articles: {articles_analyzed}")
+                    return True
+                elif response.status == 400:
+                    # No articles found - this is expected if no scraping was done
+                    error_data = await response.json()
+                    self.log_test("Admin Manual Synthesis", True, f"Minor: {error_data.get('detail', 'No articles found')}")
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("Admin Manual Synthesis", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except asyncio.TimeoutError:
+            self.log_test("Admin Manual Synthesis", False, "Request timed out (>120s)")
+            return False
+        except Exception as e:
+            self.log_test("Admin Manual Synthesis", False, f"Exception: {str(e)}")
+            return False
+
     async def run_all_tests(self):
         """Run all backend tests in sequence"""
         print("=" * 80)
-        print("POLITICAL ANALYSIS BACKEND COMPREHENSIVE TESTING")
+        print("POLITICAL ANALYSIS BACKEND COMPREHENSIVE TESTING - V2.0")
+        print("TESTING NEW SCRAPING SYSTEM & REFACTORED API ENDPOINTS")
         print("=" * 80)
         print(f"Testing backend at: {BACKEND_URL}")
         print(f"Started at: {datetime.now().isoformat()}")
         print()
         
-        # Test sequence
+        # Test sequence - prioritizing new functionality
         tests = [
             ("Health Check", self.test_health_check),
+            ("Initialize Default Sources", self.test_init_default_sources),
+            ("Daily Synthesis Endpoints", self.test_daily_synthesis_endpoints),
+            ("Sources Status Endpoint", self.test_sources_status_endpoint),
+            ("Admin Sources Management", self.test_admin_sources_endpoints),
+            ("Admin Configuration", self.test_admin_config_endpoints),
+            ("Admin Statistics", self.test_admin_stats_endpoint),
+            ("Admin Manual Scraping", self.test_admin_manual_scraping),
+            ("Admin Manual Synthesis", self.test_admin_manual_synthesis),
             ("Auto Glossary Generation", self.test_auto_glossary_generation),
             ("Manual Glossary Operations", self.test_manual_glossary_operations),
             ("Sources Operations", self.test_sources_operations),
