@@ -164,6 +164,9 @@ async def get_sources():
     """Get all news sources"""
     sources = []
     async for source in sources_collection.find({"active": True}):
+        # Remove MongoDB ObjectId to avoid serialization issues
+        if "_id" in source:
+            del source["_id"]
         sources.append({
             "id": source["id"],
             "url": source["url"],
