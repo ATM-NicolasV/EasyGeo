@@ -41,10 +41,15 @@ client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
 # Collections
-articles_collection = db.articles
-syntheses_collection = db.syntheses
+articles_collection = db.articles  # Ancienne collection (à garder pour compatibilité)
+syntheses_collection = db.syntheses  # Ancienne collection (à garder pour compatibilité)
 glossary_collection = db.glossary
 sources_collection = db.sources
+
+# Nouvelles collections pour le scraping automatique
+scraped_articles_collection = db.scraped_articles
+daily_syntheses_collection = db.daily_syntheses
+news_sources_collection = db.news_sources
 
 # Models
 class SourceURL(BaseModel):
