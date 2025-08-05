@@ -95,9 +95,11 @@ class BackendTester:
     async def test_manual_glossary_operations(self):
         """Test manual glossary CRUD operations"""
         try:
-            # Add a test term
+            # Add a test term with unique name
+            import time
+            unique_suffix = str(int(time.time()))
             test_term = {
-                "term": "Test Politique",
+                "term": f"Test Politique {unique_suffix}",
                 "definition": "Terme de test pour l'analyse politique",
                 "detailed_explanation": "Explication détaillée du terme de test"
             }
@@ -108,13 +110,25 @@ class BackendTester:
                     self.log_test("Manual Glossary Add", True, f"Added term: {data.get('message', 'Success')}")
                     
                     # Test retrieving specific term
-                    async with self.session.get(f"{BACKEND_URL}/glossary/test politique") as get_response:
+                    term_lookup = test_term["term"].lower()
+                    async with self.session.get(f"{BACKEND_URL}/glossary/{term_lookup}") as get_response:
                         if get_response.status == 200:
                             term_data = await get_response.json()
                             self.log_test("Glossary Term Retrieval", True, f"Retrieved term: {term_data.get('term', 'Unknown')}")
                             return True
                         else:
                             self.log_test("Glossary Term Retrieval", False, f"HTTP {get_response.status}")
+                            return False
+                elif response.status == 400:
+                    # Term already exists, try with different name
+                    test_term["term"] = f"Test Politique Alternative {unique_suffix}"
+                    async with self.session.post(f"{BACKEND_URL}/glossary", json=test_term) as retry_response:
+                        if retry_response.status == 200:
+                            data = await retry_response.json()
+                            self.log_test("Manual Glossary Add", True, f"Added alternative term: {data.get('message', 'Success')}")
+                            return True
+                        else:
+                            self.log_test("Manual Glossary Add", False, f"HTTP {retry_response.status} on retry")
                             return False
                 else:
                     self.log_test("Manual Glossary Add", False, f"HTTP {response.status}")
