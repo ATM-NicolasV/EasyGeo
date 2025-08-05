@@ -25,7 +25,7 @@ DB_NAME = os.environ.get('DB_NAME', 'political_analyzer')
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
 
 # FastAPI app
-app = FastAPI(title="Political Analysis API", version="1.0.0")
+app = FastAPI(title="Political Analysis API", version="2.0.0")
 
 # CORS
 app.add_middleware(
@@ -35,6 +35,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include admin routes
+app.include_router(admin_router)
 
 # Database client
 client = AsyncIOMotorClient(MONGO_URL)
