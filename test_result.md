@@ -105,6 +105,30 @@
 user_problem_statement: "Créez une application web visant à simplifier la compréhension de sujets complexes liés à la politique, la géopolitique et aux théories du complot avec synthèse d'informations multi-sources et analyse IA"
 
 backend:
+  - task: "Système de Scraping Automatique"
+    implemented: true
+    working: "NA"
+    file: "scraper.py, scheduler.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Créé système complet de scraping automatique pour Le Monde, BFM Business, Blast avec filtrage politique/géopolitique/complotisme et planificateur toutes les heures"
+
+  - task: "API Endpoints Refondus"
+    implemented: true
+    working: "NA"
+    file: "server.py, admin_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Refonte complète des endpoints: /api/daily-synthesis, /api/daily-syntheses, /api/sources-status, routes admin complètes"
+
   - task: "Claude AI Integration"
     implemented: true
     working: true
