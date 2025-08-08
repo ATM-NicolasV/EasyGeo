@@ -131,6 +131,35 @@ export const SourcesManager = () => {
     }
   };
 
+  // Initialiser les sources par défaut
+  const initializeDefaultSources = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${API_BASE_URL}/api/admin/sources/initialize-defaults`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        alert(`✅ ${data.message}\n${data.sources_added} nouvelles sources ajoutées`);
+        await loadSources();
+      } else if (response.status === 401) {
+        setError('Non autorisé - veuillez vous reconnecter');
+      } else {
+        const errorData = await response.json();
+        setError(`Erreur: ${errorData.detail}`);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'initialisation:', error);
+      setError('Erreur de connexion');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
