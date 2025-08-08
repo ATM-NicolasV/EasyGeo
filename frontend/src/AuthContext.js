@@ -186,7 +186,9 @@ export const AuthProvider = ({ children }) => {
     // Utilitaires
     isAuthenticated,
     isPremium,
+    isAdmin,
     getSubscriptionType,
+    getUserRole,
     
     // Informations utilisateur
     userInfo: user ? {
