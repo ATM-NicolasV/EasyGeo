@@ -119,9 +119,7 @@ export const SourcesManager = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/sources/${sourceId}/test`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        }
+        headers: getAuthHeaders()
       });
 
       const data = await response.json();
