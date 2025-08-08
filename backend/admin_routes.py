@@ -25,6 +25,8 @@ news_sources_collection = db.news_sources
 scraped_articles_collection = db.scraped_articles
 daily_syntheses_collection = db.daily_syntheses
 scraping_config_collection = db.scraping_config
+config_collection = db.admin_config
+ai_models_collection = db.ai_models
 
 # Router
 admin_router = APIRouter(prefix="/api/admin", tags=["Administration"])
