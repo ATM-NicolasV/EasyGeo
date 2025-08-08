@@ -5,6 +5,11 @@ import './App.css';
 import { AuthProvider, useAuth } from './AuthContext';
 import { AuthModal, AuthButton, AuthBanner, PremiumBadge } from './AuthComponents';
 
+// Import des composants d'administration avancés
+import { SourcesManager, AIModelsManager } from './AdminComponents';
+import { GlossaryManager, SystemConfigManager } from './AdminComponents2';
+import CustomAISynthesis from './CustomAISynthesis';
+
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
 function AppContent() {
