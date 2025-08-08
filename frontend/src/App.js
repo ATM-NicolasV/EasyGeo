@@ -722,7 +722,7 @@ function AppContent() {
               setShowAuthModal(true);
             }} />
             
-            {isAuthenticated() && (
+            {isAuthenticated() && isAdmin() && (
               <button 
                 className={`admin-toggle ${isAdminMode ? 'active' : ''}`}
                 onClick={() => setIsAdminMode(!isAdminMode)}
