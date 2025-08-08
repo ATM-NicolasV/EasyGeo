@@ -347,7 +347,7 @@ function AppContent() {
               <h3>Aucune synthèse disponible</h3>
               <p>La synthèse automatique est en cours de génération ou aucun article politique n'a été trouvé aujourd'hui.</p>
               
-              {isAdminMode && (
+              {isAdmin() && (
                 <div className="admin-actions">
                   <button onClick={triggerManualScraping} disabled={loading} className="admin-btn">
                     🔄 Lancer le scraping
