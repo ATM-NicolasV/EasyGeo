@@ -426,10 +426,7 @@ export const SystemConfigManager = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/config`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(formData)
       });
 
