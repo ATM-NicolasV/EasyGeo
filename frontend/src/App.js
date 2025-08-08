@@ -737,8 +737,8 @@ function AppContent() {
             
             {isAuthenticated() && isAdmin() && (
               <button 
-                className={`admin-toggle ${isAdminMode ? 'active' : ''}`}
-                onClick={() => setIsAdminMode(!isAdminMode)}
+                className={`admin-toggle ${isAdmin() ? 'active' : ''}`}
+                onClick={() => {/* Admin toggle functionality can be removed or modified */}}
                 title="Mode administrateur"
               >
                 ⚙️
