@@ -339,6 +339,36 @@ function App() {
     </div>
   );
 
+  // Composant Glossaire
+  const GlossaryTab = () => (
+    <div className="tab-content">
+      <h2>📖 Glossaire Politique & Géopolitique</h2>
+      <p>Définitions des termes complexes pour mieux comprendre l'actualité</p>
+      
+      {glossary.length > 0 ? (
+        <div className="glossary-grid">
+          {glossary.map((term) => (
+            <div key={term.id} className="glossary-card">
+              <h4 className="glossary-term">{term.term}</h4>
+              <p className="glossary-definition">{term.definition}</p>
+              {term.detailed_explanation && (
+                <details className="glossary-details">
+                  <summary>En savoir plus</summary>
+                  <p className="glossary-explanation">{term.detailed_explanation}</p>
+                </details>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="no-glossary">
+          <div className="no-content-icon">📚</div>
+          <p>Chargement du glossaire...</p>
+        </div>
+      )}
+    </div>
+  );
+
   // Composant Administration
   const AdminTab = () => (
     <div className="tab-content">
