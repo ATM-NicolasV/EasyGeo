@@ -86,10 +86,7 @@ export const GlossaryManager = () => {
 
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           ...formData,
           examples: formData.examples.filter(ex => ex.trim() !== '')
