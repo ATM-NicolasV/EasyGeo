@@ -162,119 +162,169 @@ export const SourcesManager = () => {
   };
 
   return (
-    <div className="admin-section">
+    <div className="admin-section modern">
       <div className="section-header">
-        <h3>🔗 Gestion des Sources</h3>
+        <div className="header-content">
+          <h3>🔗 Gestion des Sources</h3>
+          <p className="section-description">Configurez et gérez les sources d'actualités politiques</p>
+        </div>
         <button 
-          className="add-btn"
+          className={`modern-btn primary ${showAddForm ? 'danger' : ''}`}
           onClick={() => setShowAddForm(!showAddForm)}
         >
-          {showAddForm ? '❌ Annuler' : '➕ Ajouter une source'}
+          {showAddForm ? '✕ Annuler' : '+ Ajouter une source'}
         </button>
       </div>
 
-      {showAddForm && (
-        <form className="add-form" onSubmit={handleSubmit}>
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Nom de la source *</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>URL *</label>
-              <input
-                type="url"
-                value={formData.url}
-                onChange={(e) => setFormData({...formData, url: e.target.value})}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Type de scraper</label>
-              <select
-                value={formData.scraper_type}
-                onChange={(e) => setFormData({...formData, scraper_type: e.target.value})}
-              >
-                <option value="generic">Générique</option>
-                <option value="lemonde">Le Monde</option>
-                <option value="bfm">BFM</option>
-                <option value="blast">Blast</option>
-                <option value="custom">Personnalisé</option>
-              </select>
-            </div>
-
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                />
-                Source active
-              </label>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Description</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
-              rows="2"
-            />
-          </div>
-
-          <div className="form-actions">
-            <button type="submit" disabled={loading} className="submit-btn">
-              {loading ? '⏳ En cours...' : (editingSource ? '💾 Modifier' : '➕ Ajouter')}
-            </button>
-            <button type="button" onClick={resetForm} className="cancel-btn">
-              Annuler
-            </button>
-          </div>
-        </form>
+      {error && (
+        <div className="error-banner">
+          <span className="error-icon">⚠️</span>
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="error-close">✕</button>
+        </div>
       )}
 
-      <div className="sources-list">
-        {sources.map((source) => (
-          <div key={source.id} className="source-card">
-            <div className="source-header">
-              <h4>{source.name}</h4>
-              <div className="source-actions">
-                <button onClick={() => handleTest(source.id)} className="test-btn" title="Tester">
-                  🧪
-                </button>
-                <button onClick={() => startEdit(source)} className="edit-btn" title="Modifier">
-                  ✏️
-                </button>
-                <button onClick={() => handleDelete(source.id)} className="delete-btn" title="Supprimer">
-                  🗑️
-                </button>
-              </div>
+      {showAddForm && (
+        <div className="modern-form-container">
+          <form className="modern-form" onSubmit={handleSubmit}>
+            <div className="form-header">
+              <h4>{editingSource ? '✏️ Modifier la source' : '➕ Nouvelle source'}</h4>
             </div>
             
-            <div className="source-info">
-              <p><strong>URL:</strong> <a href={source.url} target="_blank" rel="noopener noreferrer">{source.url}</a></p>
-              <p><strong>Type:</strong> {source.scraper_type}</p>
-              <p><strong>Articles scrapés:</strong> {source.articles_scraped || 0}</p>
-              <p><strong>Statut:</strong> 
-                <span className={`status ${source.is_active ? 'active' : 'inactive'}`}>
-                  {source.is_active ? '✅ Actif' : '❌ Inactif'}
-                </span>
-              </p>
-              {source.description && (
-                <p><strong>Description:</strong> {source.description}</p>
-              )}
+            <div className="form-grid modern">
+              <div className="form-group modern">
+                <label>Nom de la source *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="ex: Le Figaro, France Info..."
+                  required
+                />
+              </div>
+
+              <div className="form-group modern">
+                <label>URL du site *</label>
+                <input
+                  type="url"
+                  value={formData.url}
+                  onChange={(e) => setFormData({...formData, url: e.target.value})}
+                  placeholder="https://example.com"
+                  required
+                />
+              </div>
+
+              <div className="form-group modern">
+                <label>Type de scraper</label>
+                <div className="select-wrapper">
+                  <select
+                    value={formData.scraper_type}
+                    onChange={(e) => setFormData({...formData, scraper_type: e.target.value})}
+                  >
+                    <option value="generic">🔄 Générique</option>
+                    <option value="lemonde">📰 Le Monde</option>
+                    <option value="bfm">📺 BFM</option>
+                    <option value="blast">💥 Blast</option>
+                    <option value="custom">⚙️ Personnalisé</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group modern checkbox">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+                  />
+                  <span className="checkmark"></span>
+                  Source active
+                </label>
+              </div>
             </div>
+
+            <div className="form-group modern">
+              <label>Description</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Description de la source et de son contenu..."
+                rows="3"
+              />
+            </div>
+
+            <div className="form-actions modern">
+              <button type="button" onClick={resetForm} className="modern-btn secondary">
+                Annuler
+              </button>
+              <button type="submit" disabled={loading} className="modern-btn primary">
+                {loading ? '⏳ En cours...' : (editingSource ? '💾 Modifier' : '+ Ajouter')}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="sources-grid modern">
+        {sources.length > 0 ? (
+          sources.map((source) => (
+            <div key={source.id} className="source-card modern">
+              <div className="card-header">
+                <div className="source-info">
+                  <h4>{source.name}</h4>
+                  <span className={`status-badge ${source.is_active ? 'active' : 'inactive'}`}>
+                    {source.is_active ? '✅ Actif' : '❌ Inactif'}
+                  </span>
+                </div>
+                <div className="card-actions">
+                  <button onClick={() => handleTest(source.id)} className="action-btn test" title="Tester">
+                    🧪
+                  </button>
+                  <button onClick={() => startEdit(source)} className="action-btn edit" title="Modifier">
+                    ✏️
+                  </button>
+                  <button onClick={() => handleDelete(source.id)} className="action-btn delete" title="Supprimer">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              
+              <div className="card-content">
+                <div className="source-details">
+                  <div className="detail-item">
+                    <span className="detail-label">URL:</span>
+                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="detail-link">
+                      {source.url}
+                    </a>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Type:</span>
+                    <span className="detail-value">{source.scraper_type}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Articles scrapés:</span>
+                    <span className="detail-value stats">{source.articles_scraped || 0}</span>
+                  </div>
+                </div>
+                
+                {source.description && (
+                  <div className="source-description">
+                    <p>{source.description}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="empty-state modern">
+            <div className="empty-icon">📭</div>
+            <h3>Aucune source configurée</h3>
+            <p>Ajoutez votre première source d'actualité pour commencer le scraping automatique</p>
+            <button onClick={() => setShowAddForm(true)} className="modern-btn primary">
+              + Ajouter une source
+            </button>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
