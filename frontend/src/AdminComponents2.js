@@ -115,9 +115,7 @@ export const GlossaryManager = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/glossary/${termId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        }
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {
