@@ -414,6 +414,14 @@ function App() {
         >
           📖 Glossaire
         </button>
+        {isAdminMode && (
+          <button 
+            className={activeTab === 'admin' ? 'tab active admin-tab' : 'tab admin-tab'}
+            onClick={() => setActiveTab('admin')}
+          >
+            ⚙️ Administration
+          </button>
+        )}
       </nav>
 
       <main className="main-content">
