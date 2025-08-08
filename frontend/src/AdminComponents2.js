@@ -38,11 +38,22 @@ export const GlossaryManager = () => {
   // Charger le glossaire
   const loadGlossary = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/glossary`);
-      const data = await response.json();
-      setGlossaryTerms(data.glossary || []);
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/api/admin/glossary`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setGlossaryTerms(data.glossary || []);
+      } else if (response.status === 401) {
+        setError('Non autorisé - veuillez vous reconnecter');
+      } else {
+        setError(`Erreur: ${response.status}`);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement du glossaire:', error);
+      setError('Erreur de connexion');
     }
   };
 
