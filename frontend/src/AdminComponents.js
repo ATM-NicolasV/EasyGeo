@@ -418,9 +418,7 @@ export const AIModelsManager = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/ai-models/${modelId}/test`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        }
+        headers: getAuthHeaders()
       });
 
       const data = await response.json();
