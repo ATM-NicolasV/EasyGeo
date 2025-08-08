@@ -391,15 +391,26 @@ export const SystemConfigManager = () => {
   // Charger la configuration
   const loadConfig = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/config`);
-      const data = await response.json();
-      setConfig(data.config || {});
-      setFormData({
-        ...formData,
-        ...data.config
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/api/admin/config`, {
+        headers: getAuthHeaders()
       });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setConfig(data.config || {});
+        setFormData({
+          ...formData,
+          ...data.config
+        });
+      } else if (response.status === 401) {
+        setError('Non autorisé - veuillez vous reconnecter');
+      } else {
+        setError(`Erreur: ${response.status}`);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement de la configuration:', error);
+      setError('Erreur de connexion');
     }
   };
 
