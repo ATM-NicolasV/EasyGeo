@@ -749,17 +749,23 @@ class BackendTester:
         print(f"Started at: {datetime.now().isoformat()}")
         print()
         
-        # Test sequence - prioritizing new functionality
+        # Test sequence - prioritizing new admin functionality
         tests = [
             ("Health Check", self.test_health_check),
+            ("Admin Authentication", self.authenticate_admin),
+            ("Admin Sources Management (Advanced)", self.test_admin_sources_management),
+            ("Admin AI Models Management", self.test_admin_ai_models_management),
+            ("Admin Glossary Management", self.test_admin_glossary_management),
+            ("Admin System Configuration", self.test_admin_system_config),
+            ("Admin Custom AI Synthesis", self.test_admin_custom_synthesis),
             ("Initialize Default Sources", self.test_init_default_sources),
             ("Daily Synthesis Endpoints", self.test_daily_synthesis_endpoints),
             ("Sources Status Endpoint", self.test_sources_status_endpoint),
-            ("Admin Sources Management", self.test_admin_sources_endpoints),
-            ("Admin Configuration", self.test_admin_config_endpoints),
+            ("Admin Sources Management (Legacy)", self.test_admin_sources_endpoints),
+            ("Admin Configuration (Legacy)", self.test_admin_config_endpoints),
             ("Admin Statistics", self.test_admin_stats_endpoint),
             ("Admin Manual Scraping", self.test_admin_manual_scraping),
-            ("Admin Manual Synthesis", self.test_admin_manual_synthesis),
+            ("Admin Manual Synthesis (Legacy)", self.test_admin_manual_synthesis),
             ("Auto Glossary Generation", self.test_auto_glossary_generation),
             ("Manual Glossary Operations", self.test_manual_glossary_operations),
             ("Sources Operations", self.test_sources_operations),
