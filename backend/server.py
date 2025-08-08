@@ -54,7 +54,7 @@ from admin_routes import admin_router
 
 # Import des nouveaux modules d'authentification
 from auth_routes import auth_router
-from auth import get_optional_current_user, User, is_premium_user
+from auth import get_optional_current_user, User, is_premium_user, require_admin
 
 load_dotenv()
 
