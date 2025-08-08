@@ -38,11 +38,22 @@ export const SourcesManager = () => {
   // Charger les sources
   const loadSources = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/sources/all`);
-      const data = await response.json();
-      setSources(data.sources || []);
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/api/admin/sources/all`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSources(data.sources || []);
+      } else if (response.status === 401) {
+        setError('Non autorisé - veuillez vous reconnecter');
+      } else {
+        setError(`Erreur: ${response.status}`);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des sources:', error);
+      setError('Erreur de connexion');
     }
   };
 
