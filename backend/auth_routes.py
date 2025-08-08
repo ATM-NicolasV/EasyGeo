@@ -1,5 +1,6 @@
 # Routes d'authentification pour EasyGeo
-from datetime import timedelta
+import uuid
+from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from auth import (
