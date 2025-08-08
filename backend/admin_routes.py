@@ -7,6 +7,9 @@ import logging
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 
+# Import des fonctions d'authentification
+from auth import require_admin, User
+
 logger = logging.getLogger(__name__)
 
 # Configuration
