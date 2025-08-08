@@ -49,6 +49,7 @@ except ImportError as e:
 import json
 from datetime import datetime, timedelta
 import re
+import traceback
 from admin_routes import admin_router
 
 # Import des nouveaux modules d'authentification
