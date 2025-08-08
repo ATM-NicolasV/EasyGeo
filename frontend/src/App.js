@@ -339,33 +339,125 @@ function App() {
     </div>
   );
 
-  // Composant Glossaire
-  const GlossaryTab = () => (
+  // Composant Administration
+  const AdminTab = () => (
     <div className="tab-content">
-      <h2>📖 Glossaire Politique & Géopolitique</h2>
-      <p>Définitions des termes complexes pour mieux comprendre l'actualité</p>
+      <h2>⚙️ Administration</h2>
+      <p>Gestion et contrôle du système de scraping automatique</p>
       
-      {glossary.length > 0 ? (
-        <div className="glossary-grid">
-          {glossary.map((term) => (
-            <div key={term.id} className="glossary-card">
-              <h4 className="glossary-term">{term.term}</h4>
-              <p className="glossary-definition">{term.definition}</p>
-              {term.detailed_explanation && (
-                <details className="glossary-details">
-                  <summary>En savoir plus</summary>
-                  <p className="glossary-explanation">{term.detailed_explanation}</p>
-                </details>
-              )}
+      <div className="admin-sections">
+        {/* Section Actions Manuelles */}
+        <div className="admin-card">
+          <h3>🔄 Actions Manuelles</h3>
+          <p>Déclencher manuellement le scraping et la génération de synthèses</p>
+          <div className="admin-actions">
+            <button 
+              onClick={triggerManualScraping} 
+              disabled={loading} 
+              className="admin-btn primary"
+            >
+              {loading ? '⏳ En cours...' : '🔄 Lancer le scraping'}
+            </button>
+            <button 
+              onClick={triggerManualSynthesis} 
+              disabled={loading} 
+              className="admin-btn primary"
+            >
+              {loading ? '⏳ En cours...' : '⚡ Générer la synthèse'}
+            </button>
+            <button 
+              onClick={() => {
+                loadTodaySynthesis();
+                loadSynthesisHistory();
+                loadSourcesStatus();
+                loadGlossary();
+              }} 
+              className="admin-btn secondary"
+            >
+              📊 Actualiser les données
+            </button>
+          </div>
+        </div>
+
+        {/* Section Statistiques */}
+        <div className="admin-card">
+          <h3>📊 Statistiques Système</h3>
+          <div className="stats-grid">
+            <div className="stat-item">
+              <span className="stat-number">{sourcesStatus.length}</span>
+              <span className="stat-label">Sources configurées</span>
             </div>
-          ))}
+            <div className="stat-item">
+              <span className="stat-number">
+                {sourcesStatus.reduce((total, source) => total + (source.articles_scraped || 0), 0)}
+              </span>
+              <span className="stat-label">Articles scrapés</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">{synthesisHistory.length}</span>
+              <span className="stat-label">Synthèses générées</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">{glossary.length}</span>
+              <span className="stat-label">Termes au glossaire</span>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="no-glossary">
-          <div className="no-content-icon">📚</div>
-          <p>Chargement du glossaire...</p>
+
+        {/* Section Configuration */}
+        <div className="admin-card">
+          <h3>🎛️ Configuration</h3>
+          <div className="config-items">
+            <div className="config-item">
+              <label>🕐 Scraping automatique:</label>
+              <span className="config-value">Toutes les heures</span>
+            </div>
+            <div className="config-item">
+              <label>🎯 Sources actives:</label>
+              <span className="config-value">
+                {sourcesStatus.filter(s => s.is_active).length} / {sourcesStatus.length}
+              </span>
+            </div>
+            <div className="config-item">
+              <label>🤖 Modèle IA:</label>
+              <span className="config-value">Claude 3.5 Haiku</span>
+            </div>
+            <div className="config-item">
+              <label>⏰ Synthèses automatiques:</label>
+              <span className="config-value">9h, 15h, 20h</span>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Section Logs récents */}
+        <div className="admin-card">
+          <h3>📋 Dernières activités</h3>
+          <div className="recent-activities">
+            {dailySynthesis?.synthesis && (
+              <div className="activity-item">
+                <span className="activity-icon">📄</span>
+                <span className="activity-text">
+                  Synthèse générée - {dailySynthesis.synthesis.sources_count} sources
+                </span>
+                <span className="activity-time">
+                  {new Date().toLocaleTimeString('fr-FR')}
+                </span>
+              </div>
+            )}
+            {sourcesStatus.map((source, index) => (
+              <div key={index} className="activity-item">
+                <span className="activity-icon">🔗</span>
+                <span className="activity-text">
+                  {source.name} - {source.today_articles || 0} articles
+                </span>
+                <span className="activity-time">
+                  {source.last_scrape ? new Date(source.last_scrape).toLocaleTimeString('fr-FR') : 'Jamais'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 
