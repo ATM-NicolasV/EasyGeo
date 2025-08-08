@@ -321,8 +321,8 @@ async def trigger_manual_scraping(current_admin: User = Depends(require_admin)):
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
 @admin_router.post("/synthesis/manual")
-async def trigger_manual_synthesis():
-    """Déclencher une génération de synthèse manuelle"""
+async def trigger_manual_synthesis(current_admin: User = Depends(require_admin)):
+    """Déclencher une génération de synthèse manuelle - Admin uniquement"""
     try:
         from scheduler import DailySynthesisGenerator
         from scraper import NewsArticle
