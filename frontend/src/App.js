@@ -34,7 +34,16 @@ function AppContent() {
   const [authModalMode, setAuthModalMode] = useState('login');
 
   // Hook d'authentification
-  const { user, isAuthenticated, isPremium, userInfo, isAdmin } = useAuth();
+  const { user, isAuthenticated, isPremium, userInfo, isAdmin, token } = useAuth();
+
+  // Fonction utilitaire pour obtenir les headers d'authentification
+  const getAuthHeaders = () => {
+    const authToken = token || Cookies.get('easygeo_token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken || ''}`
+    };
+  };
   
   // Charger les données au démarrage
   useEffect(() => {
