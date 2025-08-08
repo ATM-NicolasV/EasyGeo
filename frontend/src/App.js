@@ -689,13 +689,20 @@ function AppContent() {
             <p>Synthèse quotidienne neutre et factuelle de l'actualité</p>
           </div>
           <div className="header-right">
-            <button 
-              onClick={() => setIsAdminMode(!isAdminMode)} 
-              className={`admin-toggle ${isAdminMode ? 'active' : ''}`}
-              title="Mode administrateur"
-            >
-              ⚙️
-            </button>
+            <AuthButton onOpenModal={(mode) => {
+              setAuthModalMode(mode);
+              setShowAuthModal(true);
+            }} />
+            
+            {isAuthenticated() && (
+              <button 
+                className={`admin-toggle ${isAdminMode ? 'active' : ''}`}
+                onClick={() => setIsAdminMode(!isAdminMode)}
+                title="Mode administrateur"
+              >
+                ⚙️
+              </button>
+            )}
           </div>
         </div>
       </header>
