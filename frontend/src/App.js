@@ -31,7 +31,7 @@ function AppContent() {
   const [authModalMode, setAuthModalMode] = useState('login');
 
   // Hook d'authentification
-  const { user, isAuthenticated, isPremium, userInfo } = useAuth();
+  const { user, isAuthenticated, isPremium, userInfo, isAdmin } = useAuth();
   
   // Charger les données au démarrage
   useEffect(() => {
