@@ -680,10 +680,15 @@ export const AIModelsManager = () => {
           <div className="empty-state modern">
             <div className="empty-icon">🤖</div>
             <h3>Aucun modèle IA configuré</h3>
-            <p>Ajoutez votre premier modèle IA pour personnaliser l'analyse des actualités</p>
-            <button onClick={() => setShowAddForm(true)} className="modern-btn primary">
-              + Ajouter un modèle IA
-            </button>
+            <p>Commencez par initialiser le modèle par défaut ou ajoutez votre premier modèle IA personnalisé</p>
+            <div className="empty-actions">
+              <button onClick={initializeDefaultAIModels} className="modern-btn primary" disabled={loading}>
+                {loading ? '⏳ Initialisation...' : '🚀 Initialiser modèle par défaut'}
+              </button>
+              <button onClick={() => setShowAddForm(true)} className="modern-btn secondary">
+                + Ajouter un modèle personnalisé
+              </button>
+            </div>
           </div>
         )}
       </div>
