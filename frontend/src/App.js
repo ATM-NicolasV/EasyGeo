@@ -22,14 +22,19 @@ function App() {
   const [selectedSourceName, setSelectedSourceName] = useState('');
   const [loadingSourceArticles, setLoadingSourceArticles] = useState(false);
   
-  // Charger les données au démarrage
+  // Gérer la fermeture de la modal avec Escape
   useEffect(() => {
-    loadTodaySynthesis();
-    loadSynthesisHistory();
-    loadSourcesStatus();
-    loadGlossary();
-    initializeDefaultSources();
-  }, []);
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && showSourceArticles) {
+        closeSourceArticlesModal();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showSourceArticles]);
 
   const loadTodaySynthesis = async () => {
     try {
