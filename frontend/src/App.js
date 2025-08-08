@@ -112,10 +112,42 @@ function App() {
     }
   };
 
-  const renderGlossaryTooltip = (text) => {
-    if (!glossary.length || !text) return text;
+  const formatSynthesisContent = (content) => {
+    if (!content) return '';
+    
+    // Améliorer la mise en page du contenu généré par l'IA
+    let formattedContent = content
+      // Gérer les titres (lignes commençant par majuscules suivies de deux points)
+      .replace(/^([A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ][A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\s]+)\s*:/gm, '<h4>$1</h4>')
+      // Gérer les sous-titres numérotés
+      .replace(/^(\d+\.\s*[A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝA-z][^:]*)\s*:/gm, '<h5>$1</h5>')
+      // Gérer les listes avec tirets
+      .replace(/^-\s+(.+)$/gm, '<li>$1</li>')
+      // Gérer les listes numérotées
+      .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')
+      // Encapsuler les groupes de listes
+      .replace(/(<li>.*?<\/li>)(\n|$)/gs, '<ul>$1</ul>')
+      // Nettoyer les ul multiples
+      .replace(/<\/ul>\s*<ul>/g, '')
+      // Gérer les paragraphes
+      .split('\n\n')
+      .map(para => {
+        para = para.trim();
+        if (para === '') return '';
+        if (para.includes('<h4>') || para.includes('<h5>') || para.includes('<ul>')) {
+          return para;
+        }
+        return `<p>${para}</p>`;
+      })
+      .join('');
+    
+    return formattedContent;
+  };
 
-    let processedText = text;
+  const renderGlossaryTooltip = (text) => {
+    if (!glossary.length || !text) return <div dangerouslySetInnerHTML={{ __html: formatSynthesisContent(text) }} />;
+
+    let processedText = formatSynthesisContent(text);
     glossary.forEach(term => {
       const regex = new RegExp(`\\b${term.term}\\b`, 'gi');
       processedText = processedText.replace(regex, 
