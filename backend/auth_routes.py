@@ -9,7 +9,7 @@ from auth import (
     users_collection
 )
 
-auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
+auth_router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 @auth_router.post("/register", response_model=Token)
 async def register(user_data: UserCreate):
