@@ -16,6 +16,12 @@ function App() {
   // États pour l'administration
   const [isAdminMode, setIsAdminMode] = useState(false);
   
+  // États pour la modal des articles par source
+  const [showSourceArticles, setShowSourceArticles] = useState(false);
+  const [selectedSourceArticles, setSelectedSourceArticles] = useState([]);
+  const [selectedSourceName, setSelectedSourceName] = useState('');
+  const [loadingSourceArticles, setLoadingSourceArticles] = useState(false);
+  
   // Charger les données au démarrage
   useEffect(() => {
     loadTodaySynthesis();
