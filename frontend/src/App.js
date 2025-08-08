@@ -108,6 +108,32 @@ function App() {
     }
   };
 
+  const triggerManualSynthesis = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/admin/synthesis/manual`, { 
+        method: 'POST' 
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      alert(`Synthèse générée avec succès !\n${data.articles_analyzed} articles analysés\nSynthèse ID: ${data.synthesis_id}`);
+      
+      // Actualiser les données
+      await loadTodaySynthesis();
+      await loadSynthesisHistory();
+      
+    } catch (error) {
+      console.error('Erreur lors de la synthèse manuelle:', error);
+      alert(`Erreur lors de la génération de synthèse: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadSourceArticles = async (sourceName) => {
     try {
       setLoadingSourceArticles(true);
