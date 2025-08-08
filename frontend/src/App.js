@@ -22,6 +22,15 @@ function App() {
   const [selectedSourceName, setSelectedSourceName] = useState('');
   const [loadingSourceArticles, setLoadingSourceArticles] = useState(false);
   
+  // Charger les données au démarrage
+  useEffect(() => {
+    loadTodaySynthesis();
+    loadSynthesisHistory();
+    loadSourcesStatus();
+    loadGlossary();
+    initializeDefaultSources();
+  }, []);
+
   // Gérer la fermeture de la modal avec Escape
   useEffect(() => {
     const handleEscape = (event) => {
