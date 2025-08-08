@@ -166,7 +166,12 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     
     return user_obj
 
-async def get_optional_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[User]:
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Optional
+
+security_optional = HTTPBearer(auto_error=False)
+
+async def get_optional_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_optional)) -> Optional[User]:
     """Récupérer l'utilisateur actuel (optionnel) - pour les endpoints publics avec contenu limité"""
     if not credentials:
         return None
