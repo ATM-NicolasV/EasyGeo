@@ -59,11 +59,18 @@ function AppContent() {
   const loadTodaySynthesis = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/daily-synthesis`);
+      const response = await fetch(`${API_BASE_URL}/api/synthesis/today`);
       const data = await response.json();
-      setDailySynthesis(data);
+      
+      // Adapter la nouvelle structure de données
+      if (data.synthesis) {
+        setDailySynthesis({ synthesis: data.synthesis });
+      } else {
+        setDailySynthesis({ synthesis: null });
+      }
     } catch (error) {
       console.error('Erreur lors du chargement de la synthèse:', error);
+      setDailySynthesis({ synthesis: null });
     } finally {
       setLoading(false);
     }
