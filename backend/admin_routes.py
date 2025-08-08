@@ -294,8 +294,8 @@ async def get_articles_by_source(source: str, limit: int = 50):
 
 # Endpoints - Actions manuelles
 @admin_router.post("/scrape/manual")
-async def trigger_manual_scraping():
-    """Déclencher un scraping manuel"""
+async def trigger_manual_scraping(current_admin: User = Depends(require_admin)):
+    """Déclencher un scraping manuel - Admin uniquement"""
     try:
         from scraper import NewsScrapingService
         
