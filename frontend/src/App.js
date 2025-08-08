@@ -140,10 +140,15 @@ function AppContent() {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/admin/scrape/manual`, { 
-        method: 'POST' 
+        method: 'POST',
+        headers: getAuthHeaders()
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          alert('Non autorisé - veuillez vous reconnecter en tant qu\'administrateur');
+          return;
+        }
         throw new Error(`Erreur HTTP: ${response.status}`);
       }
       
