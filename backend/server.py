@@ -269,6 +269,65 @@ async def get_specific_daily_synthesis(synthesis_id: str):
     
     return synthesis
 
+@app.get("/api/synthesis/today")
+async def get_today_synthesis(current_user: Optional[User] = Depends(get_optional_current_user)):
+    """Récupérer la synthèse du jour avec limitations selon le type d'utilisateur"""
+    try:
+        today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        # Récupérer la synthèse la plus récente
+        cursor = daily_syntheses_collection.find().sort("created_at", -1).limit(1)
+        latest_synthesis = await cursor.to_list(length=1)
+        
+        if not latest_synthesis:
+            return {
+                "synthesis": None,
+                "user_type": "premium" if is_premium_user(current_user) else "free",
+                "message": "Aucune synthèse disponible"
+            }
+        
+        synthesis = latest_synthesis[0]
+        if "_id" in synthesis:
+            del synthesis["_id"]
+        
+        # Déterminer le type d'utilisateur et appliquer les limitations
+        user_is_premium = is_premium_user(current_user)
+        
+        response_data = {
+            "synthesis": synthesis,
+            "user_type": "premium" if user_is_premium else "free",
+            "user_authenticated": current_user is not None
+        }
+        
+        # Limitation pour utilisateurs gratuits : affichage complet mais message informatif
+        if not user_is_premium:
+            response_data["access_info"] = {
+                "type": "free",
+                "message": "Accès gratuit : dernière synthèse uniquement. Upgrade Premium pour l'historique complet !",
+                "limitations": [
+                    "Accès à la dernière synthèse seulement",
+                    "Pas d'historique des synthèses précédentes",
+                    "Accès limité aux fonctionnalités d'administration"
+                ]
+            }
+        else:
+            response_data["access_info"] = {
+                "type": "premium",
+                "message": "Accès Premium : toutes les fonctionnalités disponibles !",
+                "benefits": [
+                    "Historique complet des synthèses",
+                    "Accès aux fonctionnalités avancées",
+                    "Support prioritaire"
+                ]
+            }
+        
+        return response_data
+        
+    except Exception as e:
+        print(f"Erreur lors de la récupération de la synthèse: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur interne: {str(e)}")
+
 @app.get("/api/sources-status")
 async def get_sources_status():
     """Récupérer le statut des sources configurées"""
