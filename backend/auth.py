@@ -187,14 +187,20 @@ async def get_optional_current_user(credentials: Optional[HTTPAuthorizationCrede
     except HTTPException:
         return None
 
-def require_premium(current_user: User = Depends(get_current_user)) -> User:
-    """Dépendance qui nécessite un abonnement premium"""
-    if not current_user.is_premium:
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Dépendance qui nécessite un statut administrateur"""
+    if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Un abonnement premium est requis pour accéder à cette fonctionnalité"
+            detail="Accès administrateur requis pour cette fonctionnalité"
         )
     return current_user
+
+def is_admin_user(user: Optional[User]) -> bool:
+    """Vérifier si l'utilisateur a des privilèges administrateur"""
+    if not user:
+        return False
+    return user.is_admin or user.role == "admin"
 
 def is_premium_user(user: Optional[User]) -> bool:
     """Vérifier si l'utilisateur a un abonnement premium valide"""
