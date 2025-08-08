@@ -9,10 +9,12 @@ const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 // COMPOSANT GESTION DU GLOSSAIRE
 // ===================================
 export const GlossaryManager = () => {
+  const { token } = useAuth();
   const [glossaryTerms, setGlossaryTerms] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTerm, setEditingTerm] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [searchFilter, setSearchFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [formData, setFormData] = useState({
@@ -23,6 +25,15 @@ export const GlossaryManager = () => {
     category: 'general',
     examples: []
   });
+
+  // Fonction utilitaire pour obtenir les headers d'authentification
+  const getAuthHeaders = () => {
+    const authToken = token || Cookies.get('easygeo_token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken || ''}`
+    };
+  };
 
   // Charger le glossaire
   const loadGlossary = async () => {
