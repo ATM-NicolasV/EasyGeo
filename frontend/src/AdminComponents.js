@@ -319,10 +319,15 @@ export const SourcesManager = () => {
           <div className="empty-state modern">
             <div className="empty-icon">📭</div>
             <h3>Aucune source configurée</h3>
-            <p>Ajoutez votre première source d'actualité pour commencer le scraping automatique</p>
-            <button onClick={() => setShowAddForm(true)} className="modern-btn primary">
-              + Ajouter une source
-            </button>
+            <p>Commencez par initialiser les sources par défaut ou ajoutez votre première source d'actualité</p>
+            <div className="empty-actions">
+              <button onClick={initializeDefaultSources} className="modern-btn primary" disabled={loading}>
+                {loading ? '⏳ Initialisation...' : '🚀 Initialiser sources par défaut'}
+              </button>
+              <button onClick={() => setShowAddForm(true)} className="modern-btn secondary">
+                + Ajouter une source personnalisée
+              </button>
+            </div>
           </div>
         )}
       </div>
