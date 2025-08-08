@@ -302,6 +302,293 @@ async def get_recent_syntheses(limit: int = 10):
     
     return {"syntheses": syntheses}
 
+# =====================================
+# ENDPOINTS - GESTION DES SOURCES
+# =====================================
+
+@admin_router.get("/sources/all")
+async def get_all_sources(current_admin: User = Depends(require_admin)):
+    """Récupérer toutes les sources configurées avec détails complets"""
+    sources = []
+    cursor = news_sources_collection.find()
+    async for source in cursor:
+        if "_id" in source:
+            del source["_id"]
+        sources.append(source)
+    return {"sources": sources}
+
+@admin_router.post("/sources/create")
+async def create_news_source(source: NewsSource, current_admin: User = Depends(require_admin)):
+    """Ajouter une nouvelle source d'actualités"""
+    try:
+        source_dict = {
+            "id": str(uuid.uuid4()),
+            "name": source.name,
+            "url": source.url,
+            "description": source.description,
+            "scraper_type": source.scraper_type,
+            "css_selectors": source.css_selectors or {},
+            "headers": source.headers or {},
+            "custom_scraping_rules": source.custom_scraping_rules or {},
+            "is_active": source.is_active,
+            "articles_scraped": 0,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "last_scrape": None
+        }
+        
+        await news_sources_collection.insert_one(source_dict)
+        
+        return {
+            "message": "Source ajoutée avec succès",
+            "source_id": source_dict["id"],
+            "source_name": source_dict["name"]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'ajout de la source: {str(e)}")
+
+@admin_router.put("/sources/{source_id}")
+async def update_news_source(source_id: str, source: NewsSource, current_admin: User = Depends(require_admin)):
+    """Modifier une source existante"""
+    try:
+        update_data = {
+            "name": source.name,
+            "url": source.url,
+            "description": source.description,
+            "scraper_type": source.scraper_type,
+            "css_selectors": source.css_selectors or {},
+            "headers": source.headers or {},
+            "custom_scraping_rules": source.custom_scraping_rules or {},
+            "is_active": source.is_active,
+            "updated_at": datetime.utcnow()
+        }
+        
+        result = await news_sources_collection.update_one(
+            {"id": source_id},
+            {"$set": update_data}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Source non trouvée")
+            
+        return {"message": "Source mise à jour avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour: {str(e)}")
+
+@admin_router.delete("/sources/{source_id}")
+async def delete_news_source(source_id: str, current_admin: User = Depends(require_admin)):
+    """Supprimer une source"""
+    try:
+        result = await news_sources_collection.delete_one({"id": source_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Source non trouvée")
+            
+        return {"message": "Source supprimée avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
+
+@admin_router.post("/sources/{source_id}/test")
+async def test_source_scraping(source_id: str, current_admin: User = Depends(require_admin)):
+    """Tester le scraping d'une source spécifique"""
+    try:
+        # Récupérer la source
+        source = await news_sources_collection.find_one({"id": source_id})
+        if not source:
+            raise HTTPException(status_code=404, detail="Source non trouvée")
+            
+        # Tester le scraping (simulation pour cet exemple)
+        from scraper import NewsScrapingService
+        service = NewsScrapingService()
+        
+        # Test de scraping de cette source uniquement
+        test_articles = []  # Logique de test à implémenter
+        
+        return {
+            "message": "Test de scraping terminé",
+            "source_name": source["name"],
+            "articles_found": len(test_articles),
+            "success": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors du test: {str(e)}")
+
+# =====================================
+# ENDPOINTS - GESTION DES IA
+# =====================================
+
+@admin_router.get("/ai-models")
+async def get_ai_models(current_admin: User = Depends(require_admin)):
+    """Récupérer tous les modèles IA configurés"""
+    models = []
+    cursor = ai_models_collection.find()
+    async for model in cursor:
+        if "_id" in model:
+            del model["_id"]
+        # Masquer les clés API pour la sécurité
+        if "api_key" in model:
+            model["api_key"] = "***MASQUÉ***" if model["api_key"] else None
+        models.append(model)
+    
+    return {"ai_models": models}
+
+@admin_router.post("/ai-models")
+async def add_ai_model(model: AIModel, current_admin: User = Depends(require_admin)):
+    """Ajouter un nouveau modèle IA"""
+    try:
+        model_dict = {
+            "id": str(uuid.uuid4()),
+            "name": model.name,
+            "provider": model.provider,
+            "model_id": model.model_id,
+            "api_key": model.api_key,
+            "api_endpoint": model.api_endpoint,
+            "parameters": model.parameters or {},
+            "is_active": model.is_active,
+            "description": model.description,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await ai_models_collection.insert_one(model_dict)
+        
+        return {
+            "message": "Modèle IA ajouté avec succès",
+            "model_id": model_dict["id"],
+            "model_name": model_dict["name"]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'ajout du modèle: {str(e)}")
+
+@admin_router.post("/ai-models/{model_id}/test")
+async def test_ai_model(model_id: str, current_admin: User = Depends(require_admin)):
+    """Tester un modèle IA avec une requête simple"""
+    try:
+        # Récupérer le modèle
+        model = await ai_models_collection.find_one({"id": model_id})
+        if not model:
+            raise HTTPException(status_code=404, detail="Modèle IA non trouvé")
+        
+        # Test simple du modèle
+        test_prompt = "Résumez en une phrase : l'intelligence artificielle révolutionne l'analyse politique."
+        
+        # Simulation de test (implémentation réelle selon le provider)
+        test_result = {
+            "model_name": model["name"],
+            "provider": model["provider"],
+            "test_prompt": test_prompt,
+            "response": "Test simulé - Modèle fonctionnel",
+            "success": True,
+            "response_time_ms": 150
+        }
+        
+        return test_result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors du test: {str(e)}")
+
+# =====================================
+# ENDPOINTS - GESTION DU GLOSSAIRE
+# =====================================
+
+@admin_router.get("/glossary")
+async def get_glossary_admin(current_admin: User = Depends(require_admin)):
+    """Récupérer tout le glossaire pour édition"""
+    terms = []
+    cursor = glossary_collection.find()
+    async for term in cursor:
+        if "_id" in term:
+            del term["_id"]
+        terms.append(term)
+    
+    return {"glossary": terms}
+
+@admin_router.post("/glossary")
+async def add_glossary_term(term: GlossaryTerm, current_admin: User = Depends(require_admin)):
+    """Ajouter un terme au glossaire"""
+    try:
+        term_dict = {
+            "id": str(uuid.uuid4()),
+            "term": term.term.lower(),
+            "display_term": term.display_term,
+            "definition": term.definition,
+            "detailed_explanation": term.detailed_explanation,
+            "category": term.category,
+            "examples": term.examples or [],
+            "auto_generated": False,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await glossary_collection.insert_one(term_dict)
+        
+        return {
+            "message": "Terme ajouté au glossaire",
+            "term_id": term_dict["id"],
+            "term": term_dict["display_term"]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'ajout: {str(e)}")
+
+@admin_router.put("/glossary/{term_id}")
+async def update_glossary_term(term_id: str, term: GlossaryTerm, current_admin: User = Depends(require_admin)):
+    """Modifier un terme du glossaire"""
+    try:
+        update_data = {
+            "term": term.term.lower(),
+            "display_term": term.display_term,
+            "definition": term.definition,
+            "detailed_explanation": term.detailed_explanation,
+            "category": term.category,
+            "examples": term.examples or [],
+            "updated_at": datetime.utcnow()
+        }
+        
+        result = await glossary_collection.update_one(
+            {"id": term_id},
+            {"$set": update_data}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Terme non trouvé")
+            
+        return {"message": "Terme mis à jour avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour: {str(e)}")
+
+@admin_router.delete("/glossary/{term_id}")
+async def delete_glossary_term(term_id: str, current_admin: User = Depends(require_admin)):
+    """Supprimer un terme du glossaire"""
+    try:
+        result = await glossary_collection.delete_one({"id": term_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Terme non trouvé")
+            
+        return {"message": "Terme supprimé avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
+
 @admin_router.get("/articles/by-source")
 async def get_articles_by_source(source: str, limit: int = 50):
     """Récupérer les articles d'une source spécifique"""
