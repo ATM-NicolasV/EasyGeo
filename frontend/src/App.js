@@ -481,7 +481,7 @@ function AppContent() {
         ))}
       </div>
       
-      {isAdminMode && (
+      {isAdmin() && (
         <div className="admin-section">
           <h4>🔧 Actions Administrateur</h4>
           <div className="admin-buttons">
