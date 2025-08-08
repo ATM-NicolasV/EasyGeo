@@ -605,126 +605,166 @@ function AppContent() {
       </div>
     );
   };
-  const AdminTab = () => (
-    <div className="tab-content">
-      <h2>⚙️ Administration</h2>
-      <p>Gestion et contrôle du système de scraping automatique</p>
-      
-      <div className="admin-sections">
-        {/* Section Actions Manuelles */}
-        <div className="admin-card">
-          <h3>🔄 Actions Manuelles</h3>
-          <p>Déclencher manuellement le scraping et la génération de synthèses</p>
-          <div className="admin-actions">
-            <button 
-              onClick={triggerManualScraping} 
-              disabled={loading} 
-              className="admin-btn primary"
-            >
-              {loading ? '⏳ En cours...' : '🔄 Lancer le scraping'}
-            </button>
-            <button 
-              onClick={triggerManualSynthesis} 
-              disabled={loading} 
-              className="admin-btn primary"
-            >
-              {loading ? '⏳ En cours...' : '⚡ Générer la synthèse'}
-            </button>
-            <button 
-              onClick={() => {
-                loadTodaySynthesis();
-                loadSynthesisHistory();
-                loadSourcesStatus();
-                loadGlossary();
-              }} 
-              className="admin-btn secondary"
-            >
-              📊 Actualiser les données
-            </button>
-          </div>
+  // Composant Administration Avancé
+  const AdminTab = () => {
+    const [adminView, setAdminView] = useState('dashboard');
+    
+    return (
+      <div className="tab-content">
+        <h2>⚙️ Administration Avancée</h2>
+        <p>Panneau de contrôle complet pour la gestion du système EasyGeo</p>
+        
+        {/* Navigation des sections d'admin */}
+        <div className="admin-nav">
+          <button 
+            className={`admin-nav-btn ${adminView === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setAdminView('dashboard')}
+          >
+            🏠 Tableau de Bord
+          </button>
+          <button 
+            className={`admin-nav-btn ${adminView === 'sources' ? 'active' : ''}`}
+            onClick={() => setAdminView('sources')}
+          >
+            🔗 Gestion des Sources
+          </button>
+          <button 
+            className={`admin-nav-btn ${adminView === 'ai-models' ? 'active' : ''}`}
+            onClick={() => setAdminView('ai-models')}
+          >
+            🤖 Modèles IA
+          </button>
+          <button 
+            className={`admin-nav-btn ${adminView === 'glossary' ? 'active' : ''}`}
+            onClick={() => setAdminView('glossary')}
+          >
+            📚 Glossaire
+          </button>
+          <button 
+            className={`admin-nav-btn ${adminView === 'synthesis' ? 'active' : ''}`}
+            onClick={() => setAdminView('synthesis')}
+          >
+            🚀 Synthèse IA
+          </button>
+          <button 
+            className={`admin-nav-btn ${adminView === 'config' ? 'active' : ''}`}
+            onClick={() => setAdminView('config')}
+          >
+            ⚙️ Configuration
+          </button>
         </div>
 
-        {/* Section Statistiques */}
-        <div className="admin-card">
-          <h3>📊 Statistiques Système</h3>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <span className="stat-number">{sourcesStatus.length}</span>
-              <span className="stat-label">Sources configurées</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">
-                {sourcesStatus.reduce((total, source) => total + (source.articles_scraped || 0), 0)}
-              </span>
-              <span className="stat-label">Articles scrapés</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">{synthesisHistory.length}</span>
-              <span className="stat-label">Synthèses générées</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">{glossary.length}</span>
-              <span className="stat-label">Termes au glossaire</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Section Configuration */}
-        <div className="admin-card">
-          <h3>🎛️ Configuration</h3>
-          <div className="config-items">
-            <div className="config-item">
-              <label>🕐 Scraping automatique:</label>
-              <span className="config-value">Toutes les heures</span>
-            </div>
-            <div className="config-item">
-              <label>🎯 Sources actives:</label>
-              <span className="config-value">
-                {sourcesStatus.filter(s => s.is_active).length} / {sourcesStatus.length}
-              </span>
-            </div>
-            <div className="config-item">
-              <label>🤖 Modèle IA:</label>
-              <span className="config-value">Claude 3.5 Haiku</span>
-            </div>
-            <div className="config-item">
-              <label>⏰ Synthèses automatiques:</label>
-              <span className="config-value">9h, 15h, 20h</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Section Logs récents */}
-        <div className="admin-card">
-          <h3>📋 Dernières activités</h3>
-          <div className="recent-activities">
-            {dailySynthesis?.synthesis && (
-              <div className="activity-item">
-                <span className="activity-icon">📄</span>
-                <span className="activity-text">
-                  Synthèse générée - {dailySynthesis.synthesis.sources_count} sources
-                </span>
-                <span className="activity-time">
-                  {new Date().toLocaleTimeString('fr-FR')}
-                </span>
+        {/* Contenu des sections */}
+        <div className="admin-content">
+          {adminView === 'dashboard' && (
+            <div className="admin-dashboard">
+              <h3>🏠 Tableau de Bord Administrateur</h3>
+              
+              {/* Actions rapides */}
+              <div className="quick-actions">
+                <h4>🔄 Actions Rapides</h4>
+                <div className="quick-buttons">
+                  <button 
+                    onClick={triggerManualScraping} 
+                    disabled={loading} 
+                    className="quick-btn scraping"
+                  >
+                    {loading ? '⏳ En cours...' : '🔄 Scraping Manuel'}
+                  </button>
+                  <button 
+                    onClick={triggerManualSynthesis} 
+                    disabled={loading} 
+                    className="quick-btn synthesis"
+                  >
+                    {loading ? '⏳ En cours...' : '⚡ Synthèse Manuelle'}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      loadTodaySynthesis();
+                      loadSynthesisHistory();
+                      loadSourcesStatus();
+                      loadGlossary();
+                    }} 
+                    className="quick-btn refresh"
+                  >
+                    📊 Actualiser Données
+                  </button>
+                </div>
               </div>
-            )}
-            {sourcesStatus.map((source, index) => (
-              <div key={index} className="activity-item">
-                <span className="activity-icon">🔗</span>
-                <span className="activity-text">
-                  {source.name} - {source.today_articles || 0} articles
-                </span>
-                <span className="activity-time">
-                  {source.last_scrape ? new Date(source.last_scrape).toLocaleTimeString('fr-FR') : 'Jamais'}
-                </span>
+
+              {/* Statistiques système */}
+              <div className="dashboard-stats">
+                <h4>📊 Statistiques Système</h4>
+                <div className="stats-grid-dashboard">
+                  <div className="stat-card">
+                    <div className="stat-icon">🔗</div>
+                    <div className="stat-info">
+                      <span className="stat-number">{sourcesStatus.length}</span>
+                      <span className="stat-label">Sources configurées</span>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">📰</div>
+                    <div className="stat-info">
+                      <span className="stat-number">
+                        {sourcesStatus.reduce((total, source) => total + (source.articles_scraped || 0), 0)}
+                      </span>
+                      <span className="stat-label">Articles scrapés</span>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">📄</div>
+                    <div className="stat-info">
+                      <span className="stat-number">{synthesisHistory.length}</span>
+                      <span className="stat-label">Synthèses générées</span>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">📚</div>
+                    <div className="stat-info">
+                      <span className="stat-number">{glossary.length}</span>
+                      <span className="stat-label">Termes au glossaire</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-            ))}
-          </div>
+
+              {/* Configuration système */}
+              <div className="system-overview">
+                <h4>🎛️ Aperçu Configuration</h4>
+                <div className="config-overview">
+                  <div className="config-item-overview">
+                    <span className="config-label">🕐 Scraping automatique:</span>
+                    <span className="config-value">Toutes les heures</span>
+                  </div>
+                  <div className="config-item-overview">
+                    <span className="config-label">🤖 Modèle IA:</span>
+                    <span className="config-value">Claude 3.5 Haiku</span>
+                  </div>
+                  <div className="config-item-overview">
+                    <span className="config-label">⏰ Synthèses automatiques:</span>
+                    <span className="config-value">9h, 15h, 20h</span>
+                  </div>
+                  <div className="config-item-overview">
+                    <span className="config-label">🎯 Sources actives:</span>
+                    <span className="config-value">
+                      {sourcesStatus.filter(s => s.is_active).length} / {sourcesStatus.length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {adminView === 'sources' && <SourcesManager />}
+          {adminView === 'ai-models' && <AIModelsManager />}
+          {adminView === 'glossary' && <GlossaryManager />}
+          {adminView === 'synthesis' && <CustomAISynthesis />}
+          {adminView === 'config' && <SystemConfigManager />}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="App">
