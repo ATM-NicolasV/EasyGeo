@@ -107,15 +107,18 @@ user_problem_statement: "Créez une application web visant à simplifier la comp
 backend:
   - task: "Système de Scraping Automatique"
     implemented: true
-    working: "NA"
+    working: true
     file: "scraper.py, scheduler.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Créé système complet de scraping automatique pour Le Monde, BFM Business, Blast avec filtrage politique/géopolitique/complotisme et planificateur toutes les heures"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Système de scraping automatique fonctionnel. Test manuel de scraping: 38 articles trouvés, 14 nouveaux articles ajoutés. Sources par défaut initialisées (Le Monde, BFM, Blast). Génération automatique de synthèse: 73 articles analysés avec succès."
 
   - task: "API Endpoints Refondus"
     implemented: true
