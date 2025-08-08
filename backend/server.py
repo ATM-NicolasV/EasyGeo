@@ -328,6 +328,56 @@ async def get_today_synthesis(current_user: Optional[User] = Depends(get_optiona
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erreur interne: {str(e)}")
 
+@app.get("/api/synthesis/history")
+async def get_synthesis_history(current_user: Optional[User] = Depends(get_optional_current_user)):
+    """Récupérer l'historique des synthèses - Premium uniquement"""
+    try:
+        # Vérifier si l'utilisateur est premium
+        user_is_premium = is_premium_user(current_user)
+        
+        if not user_is_premium:
+            # Pour les utilisateurs non-premium, retourner seulement la dernière synthèse
+            cursor = daily_syntheses_collection.find().sort("created_at", -1).limit(1)
+            latest_synthesis = await cursor.to_list(length=1)
+            
+            return {
+                "syntheses": latest_synthesis,
+                "user_type": "free",
+                "user_authenticated": current_user is not None,
+                "access_info": {
+                    "type": "free",
+                    "message": "Historique complet réservé aux abonnés Premium",
+                    "upgrade_message": "Passez Premium pour accéder à tout l'historique des synthèses !",
+                    "available_count": len(latest_synthesis),
+                    "total_count": await daily_syntheses_collection.count_documents({})
+                }
+            }
+        
+        # Pour les utilisateurs premium, retourner tout l'historique
+        cursor = daily_syntheses_collection.find().sort("created_at", -1).limit(50)
+        syntheses = await cursor.to_list(length=None)
+        
+        for synthesis in syntheses:
+            if "_id" in synthesis:
+                del synthesis["_id"]
+        
+        return {
+            "syntheses": syntheses,
+            "user_type": "premium",
+            "user_authenticated": True,
+            "access_info": {
+                "type": "premium",
+                "message": "Accès complet à l'historique",
+                "available_count": len(syntheses),
+                "total_count": await daily_syntheses_collection.count_documents({})
+            }
+        }
+        
+    except Exception as e:
+        print(f"Erreur lors de la récupération de l'historique: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur interne: {str(e)}")
+
 @app.get("/api/sources-status")
 async def get_sources_status():
     """Récupérer le statut des sources configurées"""
