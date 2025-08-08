@@ -150,6 +150,7 @@ function App() {
 
   const loadSourceArticles = async (sourceName) => {
     try {
+      console.log(`🔍 Chargement des articles pour: ${sourceName}`);
       setLoadingSourceArticles(true);
       setSelectedSourceName(sourceName);
       
@@ -160,11 +161,12 @@ function App() {
       }
       
       const data = await response.json();
+      console.log(`✅ ${data.articles.length} articles récupérés pour ${sourceName}`);
       setSelectedSourceArticles(data.articles || []);
       setShowSourceArticles(true);
       
     } catch (error) {
-      console.error('Erreur lors du chargement des articles:', error);
+      console.error('❌ Erreur lors du chargement des articles:', error);
       alert(`Erreur lors du chargement des articles: ${error.message}`);
       setSelectedSourceArticles([]);
     } finally {
