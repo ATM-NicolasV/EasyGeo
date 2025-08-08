@@ -259,6 +259,13 @@ function AppContent() {
         </div>
       </div>
 
+      {!isAuthenticated() && (
+        <AuthBanner onOpenModal={(mode) => {
+          setAuthModalMode(mode);
+          setShowAuthModal(true);
+        }} />
+      )}
+
       {loading ? (
         <div className="loading-state">
           <div className="spinner"></div>
