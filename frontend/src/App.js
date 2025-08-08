@@ -355,6 +355,27 @@ function AppContent() {
   const HistoryTab = () => (
     <div className="tab-content">
       <h2>📚 Historique des Synthèses</h2>
+      <p>Consultez les analyses précédentes des actualités politiques et géopolitiques</p>
+
+      {!isAuthenticated() && (
+        <AuthBanner onOpenModal={(mode) => {
+          setAuthModalMode(mode);
+          setShowAuthModal(true);
+        }} />
+      )}
+
+      {isAuthenticated() && !isPremium() && (
+        <div className="premium-upgrade-banner">
+          <div className="upgrade-content">
+            <h3>⭐ Historique complet avec Premium</h3>
+            <p>Accès gratuit limité à la dernière synthèse. Passez Premium pour voir tout l'historique !</p>
+            <PremiumBadge onUpgrade={() => {
+              // Recharger les données après upgrade
+              loadSynthesisHistory();
+            }} />
+          </div>
+        </div>
+      )}
       
       {synthesisHistory.length > 0 ? (
         <div className="history-list">
