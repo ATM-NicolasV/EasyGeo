@@ -78,9 +78,17 @@ function AppContent() {
 
   const loadSynthesisHistory = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/daily-syntheses`);
+      const response = await fetch(`${API_BASE_URL}/api/synthesis/history`);
       const data = await response.json();
+      
+      // Adapter la nouvelle structure de données
       setSynthesisHistory(data.syntheses || []);
+      
+      // Optionnel: traiter les informations d'accès utilisateur
+      if (data.access_info) {
+        console.log('Type d\'accès:', data.access_info.type);
+        console.log('Message:', data.access_info.message);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement de l\'historique:', error);
     }
