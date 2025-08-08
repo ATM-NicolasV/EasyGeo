@@ -760,7 +760,7 @@ function AppContent() {
         >
           📖 Glossaire
         </button>
-        {isAdminMode && (
+        {isAdminMode && isAdmin() && (
           <button 
             className={activeTab === 'admin' ? 'tab active admin-tab' : 'tab admin-tab'}
             onClick={() => setActiveTab('admin')}
