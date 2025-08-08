@@ -459,7 +459,79 @@ function App() {
     </div>
   );
 
-  // Composant Administration
+  // Composant Modal pour les articles d'une source
+  const SourceArticlesModal = () => {
+    if (!showSourceArticles) return null;
+
+    return (
+      <div className="modal-overlay" onClick={closeSourceArticlesModal}>
+        <div className="modal-content source-articles-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>📰 Articles de {selectedSourceName}</h3>
+            <button className="modal-close" onClick={closeSourceArticlesModal}>✕</button>
+          </div>
+          
+          <div className="modal-body">
+            {loadingSourceArticles ? (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Chargement des articles...</p>
+              </div>
+            ) : (
+              <>
+                <div className="articles-summary">
+                  <p>{selectedSourceArticles.length} articles trouvés pour <strong>{selectedSourceName}</strong></p>
+                </div>
+                
+                <div className="articles-list">
+                  {selectedSourceArticles.map((article, index) => (
+                    <div key={article.id || index} className="article-card">
+                      <div className="article-header">
+                        <h4 className="article-title">{article.title}</h4>
+                        <span className={`political-badge ${article.is_political ? 'political' : 'non-political'}`}>
+                          {article.is_political ? '🏛️ Politique' : '📰 Général'}
+                        </span>
+                      </div>
+                      
+                      <div className="article-meta">
+                        <span className="article-date">
+                          {article.scraped_at ? new Date(article.scraped_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
+                        </span>
+                        <span className="article-time">
+                          {article.scraped_at ? new Date(article.scraped_at).toLocaleTimeString('fr-FR') : ''}
+                        </span>
+                      </div>
+                      
+                      <p className="article-preview">{article.content}</p>
+                      
+                      <div className="article-actions">
+                        <a 
+                          href={article.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="article-link"
+                        >
+                          🔗 Lire l'article complet
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {selectedSourceArticles.length === 0 && (
+                  <div className="no-articles">
+                    <div className="no-content-icon">📭</div>
+                    <h3>Aucun article trouvé</h3>
+                    <p>Aucun article n'a été trouvé pour cette source.</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
   const AdminTab = () => (
     <div className="tab-content">
       <h2>⚙️ Administration</h2>
