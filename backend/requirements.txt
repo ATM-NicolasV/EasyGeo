@@ -10,4 +10,4 @@ beautifulsoup4==4.12.2
 html2text==2020.1.16
 aiohttp==3.9.1
 schedule==1.2.0
-python-multipart==0.0.6
+python-multipart==0.0.6aiohttp==3.10.5
