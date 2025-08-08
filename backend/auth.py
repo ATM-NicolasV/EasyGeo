@@ -45,7 +45,9 @@ class UserLogin(BaseModel):
 class User(UserBase):
     id: str
     is_premium: bool = False
+    is_admin: bool = False
     subscription_type: str = "free"  # "free", "premium"
+    role: str = "user"  # "user", "admin"
     subscription_expires: Optional[datetime] = None
     created_at: datetime
     last_login: Optional[datetime] = None
