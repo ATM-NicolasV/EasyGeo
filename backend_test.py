@@ -742,8 +742,8 @@ class BackendTester:
     async def run_all_tests(self):
         """Run all backend tests in sequence"""
         print("=" * 80)
-        print("POLITICAL ANALYSIS BACKEND COMPREHENSIVE TESTING - V2.0")
-        print("TESTING NEW SCRAPING SYSTEM & REFACTORED API ENDPOINTS")
+        print("EASYGEO BACKEND COMPREHENSIVE TESTING - V3.0")
+        print("TESTING ADVANCED ADMIN ENDPOINTS & AUTHENTICATION")
         print("=" * 80)
         print(f"Testing backend at: {BACKEND_URL}")
         print(f"Started at: {datetime.now().isoformat()}")
