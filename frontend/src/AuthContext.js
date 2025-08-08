@@ -163,7 +163,9 @@ export const AuthProvider = ({ children }) => {
   // Utilitaires
   const isAuthenticated = () => !!user && !!token;
   const isPremium = () => user?.is_premium || false;
+  const isAdmin = () => user?.is_admin || false;
   const getSubscriptionType = () => user?.subscription_type || 'free';
+  const getUserRole = () => user?.role || 'user';
 
   const value = {
     // État
