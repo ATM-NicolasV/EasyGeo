@@ -551,6 +551,7 @@ function App() {
         {activeTab === 'history' && <HistoryTab />}
         {activeTab === 'sources' && <SourcesTab />}
         {activeTab === 'glossary' && <GlossaryTab />}
+        {activeTab === 'admin' && <AdminTab />}
       </main>
 
       <footer className="app-footer">
