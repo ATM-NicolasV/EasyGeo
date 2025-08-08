@@ -1,5 +1,7 @@
 // Composants d'administration avancés pour EasyGeo
 import React, { useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import Cookies from 'js-cookie';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
