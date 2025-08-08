@@ -160,6 +160,35 @@ export const SourcesManager = () => {
     }
   };
 
+  // Initialiser les modèles IA par défaut
+  const initializeDefaultAIModels = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${API_BASE_URL}/api/admin/ai-models/initialize-defaults`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        alert(`✅ ${data.message}\n${data.models_added} nouveaux modèles ajoutés`);
+        await loadAIModels();
+      } else if (response.status === 401) {
+        setError('Non autorisé - veuillez vous reconnecter');
+      } else {
+        const errorData = await response.json();
+        setError(`Erreur: ${errorData.detail}`);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'initialisation:', error);
+      setError('Erreur de connexion');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
