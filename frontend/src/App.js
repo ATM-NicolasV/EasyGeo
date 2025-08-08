@@ -83,12 +83,20 @@ function App() {
       const response = await fetch(`${API_BASE_URL}/api/admin/scrape/manual`, { 
         method: 'POST' 
       });
+      
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      
       const data = await response.json();
-      alert(`Scraping terminé: ${data.new_articles} nouveaux articles trouvés`);
+      alert(`Scraping terminé avec succès !\n${data.articles_found} articles trouvés\n${data.new_articles} nouveaux articles ajoutés`);
+      
+      // Actualiser les données
       await loadSourcesStatus();
+      
     } catch (error) {
       console.error('Erreur lors du scraping manuel:', error);
-      alert('Erreur lors du scraping manuel');
+      alert(`Erreur lors du scraping manuel: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -100,13 +108,21 @@ function App() {
       const response = await fetch(`${API_BASE_URL}/api/admin/synthesis/manual`, { 
         method: 'POST' 
       });
+      
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      
       const data = await response.json();
-      alert(`Synthèse générée avec succès (${data.articles_analyzed} articles analysés)`);
+      alert(`Synthèse générée avec succès !\n${data.articles_analyzed} articles analysés\nSynthèse ID: ${data.synthesis_id}`);
+      
+      // Actualiser les données
       await loadTodaySynthesis();
       await loadSynthesisHistory();
+      
     } catch (error) {
       console.error('Erreur lors de la synthèse manuelle:', error);
-      alert('Erreur lors de la génération de synthèse');
+      alert(`Erreur lors de la génération de synthèse: ${error.message}`);
     } finally {
       setLoading(false);
     }
