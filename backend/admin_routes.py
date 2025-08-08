@@ -36,9 +36,46 @@ class NewsSource(BaseModel):
     name: str
     url: str
     description: Optional[str] = None
-    scraper_type: str  # "lemonde", "bfm", "blast", "generic"
+    scraper_type: str = "generic"
+    css_selectors: Optional[Dict[str, str]] = {}
     is_active: bool = True
-    css_selectors: Optional[Dict[str, str]] = None
+    headers: Optional[Dict[str, str]] = {}
+    custom_scraping_rules: Optional[Dict[str, Any]] = {}
+
+class AIModel(BaseModel):
+    name: str
+    provider: str  # "anthropic", "openai", "local", etc.
+    model_id: str  # "claude-3-5-haiku-20241022", "gpt-4", etc.
+    api_key: Optional[str] = None
+    api_endpoint: Optional[str] = None
+    parameters: Optional[Dict[str, Any]] = {}
+    is_active: bool = True
+    description: Optional[str] = None
+
+class GlossaryTerm(BaseModel):
+    term: str
+    display_term: str
+    definition: str
+    detailed_explanation: Optional[str] = None
+    category: Optional[str] = "general"
+    examples: Optional[List[str]] = []
+
+class SystemConfig(BaseModel):
+    scraping_frequency_hours: int = 1
+    synthesis_times: List[str] = ["09:00", "15:00", "20:00"]
+    max_articles_per_synthesis: int = 50
+    reliability_threshold: float = 0.7
+    auto_glossary_generation: bool = True
+    default_ai_model: str = "claude-3-5-haiku"
+    email_notifications: bool = False
+    notification_email: Optional[str] = None
+    data_retention_days: int = 365
+
+class SynthesisRequest(BaseModel):
+    ai_model: str
+    max_articles: Optional[int] = 20
+    custom_prompt: Optional[str] = None
+    themes_filter: Optional[List[str]] = None
     
 class ScrapingConfig(BaseModel):
     scraping_interval_hours: int = 1
