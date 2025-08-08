@@ -149,7 +149,6 @@ async def update_profile(
 @auth_router.post("/upgrade-premium")
 async def upgrade_to_premium(current_user: User = Depends(get_current_user)):
     """Upgrade vers premium (simulation pour tests)"""
-    from datetime import datetime, timedelta
     
     # Mettre à jour l'utilisateur vers premium (1 an)
     await users_collection.update_one(
@@ -162,6 +161,61 @@ async def upgrade_to_premium(current_user: User = Depends(get_current_user)):
     )
     
     return {"message": "Upgrade vers premium réussi !"}
+
+# Route pour promouvoir un utilisateur en admin (pour les tests)
+@auth_router.post("/promote-admin")
+async def promote_to_admin(current_user: User = Depends(get_current_user)):
+    """Promouvoir un utilisateur en admin (simulation pour tests)"""
+    
+    # Mettre à jour l'utilisateur vers admin
+    await users_collection.update_one(
+        {"id": current_user.id},
+        {"$set": {
+            "is_admin": True,
+            "role": "admin"
+        }}
+    )
+    
+    return {"message": "Promotion vers admin réussie !"}
+
+# Route pour créer un utilisateur admin par défaut
+@auth_router.post("/create-default-admin")
+async def create_default_admin():
+    """Créer un utilisateur admin par défaut si il n'existe pas"""
+    
+    # Vérifier si un admin existe déjà
+    admin_exists = await users_collection.find_one({"is_admin": True})
+    if admin_exists:
+        return {"message": "Un administrateur existe déjà", "admin_email": admin_exists["email"]}
+    
+    # Créer un admin par défaut
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    admin_data = {
+        "id": str(uuid.uuid4()),
+        "email": "admin@easygeo.com",
+        "first_name": "Admin",
+        "last_name": "EasyGeo",
+        "hashed_password": pwd_context.hash("admin123"),
+        "is_premium": True,
+        "is_admin": True,
+        "subscription_type": "premium",
+        "role": "admin",
+        "subscription_expires": None,  # Admin premium à vie
+        "created_at": datetime.utcnow(),
+        "last_login": None,
+        "is_active": True
+    }
+    
+    await users_collection.insert_one(admin_data)
+    
+    return {
+        "message": "Administrateur créé avec succès !",
+        "admin_email": "admin@easygeo.com",
+        "admin_password": "admin123",
+        "warning": "Changez le mot de passe en production !"
+    }
 
 # Route pour obtenir les statistiques utilisateur
 @auth_router.get("/stats")
