@@ -763,6 +763,13 @@ function AppContent() {
 
       {/* Modal pour les articles par source */}
       <SourceArticlesModal />
+
+      {/* Modal d'authentification */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode={authModalMode}
+      />
     </div>
   );
 }
