@@ -25,6 +25,13 @@ function AppContent() {
   const [selectedSourceArticles, setSelectedSourceArticles] = useState([]);
   const [selectedSourceName, setSelectedSourceName] = useState('');
   const [loadingSourceArticles, setLoadingSourceArticles] = useState(false);
+
+  // États pour l'authentification
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('login');
+
+  // Hook d'authentification
+  const { user, isAuthenticated, isPremium, userInfo } = useAuth();
   
   // Charger les données au démarrage
   useEffect(() => {
