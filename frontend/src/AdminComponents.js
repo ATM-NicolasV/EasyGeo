@@ -101,9 +101,7 @@ export const SourcesManager = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/sources/${sourceId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        }
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {
