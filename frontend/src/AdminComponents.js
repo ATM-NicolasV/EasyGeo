@@ -9,10 +9,12 @@ const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 // COMPOSANT GESTION DES SOURCES
 // ===================================
 export const SourcesManager = () => {
+  const { token } = useAuth();
   const [sources, setSources] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingSource, setEditingSource] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -23,6 +25,15 @@ export const SourcesManager = () => {
     css_selectors: {},
     custom_scraping_rules: {}
   });
+
+  // Fonction utilitaire pour obtenir les headers d'authentification
+  const getAuthHeaders = () => {
+    const authToken = token || Cookies.get('easygeo_token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken || ''}`
+    };
+  };
 
   // Charger les sources
   const loadSources = async () => {
