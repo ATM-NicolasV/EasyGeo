@@ -760,4 +760,13 @@ function AppContent() {
   );
 }
 
+// Composant App principal avec AuthProvider
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
 export default App;
