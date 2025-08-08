@@ -280,9 +280,15 @@ function App() {
                 <h4>📊 Répartition des sources:</h4>
                 <div className="sources-stats">
                   {Object.entries(dailySynthesis.synthesis.sources_breakdown || {}).map(([source, count]) => (
-                    <div key={source} className="source-stat">
+                    <div 
+                      key={source} 
+                      className="source-stat clickable"
+                      onClick={() => loadSourceArticles(source)}
+                      title={`Cliquer pour voir les ${count} articles de ${source}`}
+                    >
                       <span className="source-name">{source}</span>
                       <span className="source-count">{count} article{count > 1 ? 's' : ''}</span>
+                      <span className="click-indicator">👁️</span>
                     </div>
                   ))}
                 </div>
