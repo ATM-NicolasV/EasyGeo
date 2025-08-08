@@ -445,137 +445,184 @@ export const AIModelsManager = () => {
   };
 
   return (
-    <div className="admin-section">
+    <div className="admin-section modern">
       <div className="section-header">
-        <h3>🤖 Gestion des Modèles IA</h3>
+        <div className="header-content">
+          <h3>🤖 Gestion des Modèles IA</h3>
+          <p className="section-description">Configurez les modèles d'intelligence artificielle pour l'analyse</p>
+        </div>
         <button 
-          className="add-btn"
+          className={`modern-btn primary ${showAddForm ? 'danger' : ''}`}
           onClick={() => setShowAddForm(!showAddForm)}
         >
-          {showAddForm ? '❌ Annuler' : '➕ Ajouter un modèle'}
+          {showAddForm ? '✕ Annuler' : '+ Ajouter un modèle'}
         </button>
       </div>
 
-      {showAddForm && (
-        <form className="add-form" onSubmit={handleSubmit}>
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Nom du modèle *</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="ex: Claude 3.5 Haiku"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Fournisseur *</label>
-              <select
-                value={formData.provider}
-                onChange={(e) => setFormData({...formData, provider: e.target.value})}
-                required
-              >
-                <option value="anthropic">Anthropic</option>
-                <option value="openai">OpenAI</option>
-                <option value="google">Google</option>
-                <option value="local">Local</option>
-                <option value="other">Autre</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>ID du modèle *</label>
-              <input
-                type="text"
-                value={formData.model_id}
-                onChange={(e) => setFormData({...formData, model_id: e.target.value})}
-                placeholder="ex: claude-3-5-haiku-20241022"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Clé API</label>
-              <input
-                type="password"
-                value={formData.api_key}
-                onChange={(e) => setFormData({...formData, api_key: e.target.value})}
-                placeholder="Clé API (optionnel si configurée globalement)"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Endpoint API (optionnel)</label>
-              <input
-                type="url"
-                value={formData.api_endpoint}
-                onChange={(e) => setFormData({...formData, api_endpoint: e.target.value})}
-                placeholder="URL personnalisée de l'API"
-              />
-            </div>
-
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                />
-                Modèle actif
-              </label>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Description</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
-              placeholder="Description du modèle et de ses capacités"
-              rows="3"
-            />
-          </div>
-
-          <div className="form-actions">
-            <button type="submit" disabled={loading} className="submit-btn">
-              {loading ? '⏳ En cours...' : '➕ Ajouter le modèle'}
-            </button>
-            <button type="button" onClick={resetForm} className="cancel-btn">
-              Annuler
-            </button>
-          </div>
-        </form>
+      {error && (
+        <div className="error-banner">
+          <span className="error-icon">⚠️</span>
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="error-close">✕</button>
+        </div>
       )}
 
-      <div className="ai-models-list">
-        {aiModels.map((model) => (
-          <div key={model.id} className="ai-model-card">
-            <div className="model-header">
-              <h4>{model.name}</h4>
-              <div className="model-actions">
-                <button onClick={() => handleTest(model.id)} className="test-btn" title="Tester">
-                  🧪 Tester
-                </button>
-              </div>
+      {showAddForm && (
+        <div className="modern-form-container">
+          <form className="modern-form" onSubmit={handleSubmit}>
+            <div className="form-header">
+              <h4>🤖 Nouveau modèle IA</h4>
             </div>
             
-            <div className="model-info">
-              <p><strong>Fournisseur:</strong> {model.provider}</p>
-              <p><strong>ID Modèle:</strong> {model.model_id}</p>
-              <p><strong>API Key:</strong> {model.api_key || 'Non configurée'}</p>
-              <p><strong>Statut:</strong> 
-                <span className={`status ${model.is_active ? 'active' : 'inactive'}`}>
-                  {model.is_active ? '✅ Actif' : '❌ Inactif'}
-                </span>
-              </p>
-              {model.description && (
-                <p><strong>Description:</strong> {model.description}</p>
-              )}
+            <div className="form-grid modern">
+              <div className="form-group modern">
+                <label>Nom du modèle *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="ex: Claude 3.5 Haiku, GPT-4..."
+                  required
+                />
+              </div>
+
+              <div className="form-group modern">
+                <label>Fournisseur *</label>
+                <div className="select-wrapper">
+                  <select
+                    value={formData.provider}
+                    onChange={(e) => setFormData({...formData, provider: e.target.value})}
+                    required
+                  >
+                    <option value="anthropic">🤖 Anthropic (Claude)</option>
+                    <option value="openai">🚀 OpenAI (GPT)</option>
+                    <option value="google">📊 Google (Gemini)</option>
+                    <option value="local">💻 Local</option>
+                    <option value="other">⚙️ Autre</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group modern">
+                <label>ID du modèle *</label>
+                <input
+                  type="text"
+                  value={formData.model_id}
+                  onChange={(e) => setFormData({...formData, model_id: e.target.value})}
+                  placeholder="ex: claude-3-5-haiku-20241022"
+                  required
+                />
+              </div>
+
+              <div className="form-group modern">
+                <label>Clé API</label>
+                <input
+                  type="password"
+                  value={formData.api_key}
+                  onChange={(e) => setFormData({...formData, api_key: e.target.value})}
+                  placeholder="Clé API (optionnel si configurée globalement)"
+                />
+              </div>
+
+              <div className="form-group modern">
+                <label>Endpoint API (optionnel)</label>
+                <input
+                  type="url"
+                  value={formData.api_endpoint}
+                  onChange={(e) => setFormData({...formData, api_endpoint: e.target.value})}
+                  placeholder="URL personnalisée de l'API"
+                />
+              </div>
+
+              <div className="form-group modern checkbox">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+                  />
+                  <span className="checkmark"></span>
+                  Modèle actif
+                </label>
+              </div>
             </div>
+
+            <div className="form-group modern">
+              <label>Description</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Description du modèle et de ses capacités..."
+                rows="3"
+              />
+            </div>
+
+            <div className="form-actions modern">
+              <button type="button" onClick={resetForm} className="modern-btn secondary">
+                Annuler
+              </button>
+              <button type="submit" disabled={loading} className="modern-btn primary">
+                {loading ? '⏳ En cours...' : '+ Ajouter le modèle'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="models-grid modern">
+        {aiModels.length > 0 ? (
+          aiModels.map((model) => (
+            <div key={model.id} className="model-card modern">
+              <div className="card-header">
+                <div className="model-info">
+                  <h4>{model.name}</h4>
+                  <span className={`status-badge ${model.is_active ? 'active' : 'inactive'}`}>
+                    {model.is_active ? '✅ Actif' : '❌ Inactif'}
+                  </span>
+                </div>
+                <div className="card-actions">
+                  <button onClick={() => handleTest(model.id)} className="action-btn test" title="Tester">
+                    🧪 Test
+                  </button>
+                </div>
+              </div>
+              
+              <div className="card-content">
+                <div className="model-details">
+                  <div className="detail-item">
+                    <span className="detail-label">Fournisseur:</span>
+                    <span className="detail-value provider">{model.provider}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">ID Modèle:</span>
+                    <span className="detail-value">{model.model_id}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">API Key:</span>
+                    <span className="detail-value">
+                      {model.api_key ? '🔑 Configurée' : '❌ Non configurée'}
+                    </span>
+                  </div>
+                </div>
+                
+                {model.description && (
+                  <div className="model-description">
+                    <p>{model.description}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="empty-state modern">
+            <div className="empty-icon">🤖</div>
+            <h3>Aucun modèle IA configuré</h3>
+            <p>Ajoutez votre premier modèle IA pour personnaliser l'analyse des actualités</p>
+            <button onClick={() => setShowAddForm(true)} className="modern-btn primary">
+              + Ajouter un modèle IA
+            </button>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
