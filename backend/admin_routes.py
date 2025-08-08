@@ -919,3 +919,147 @@ async def trigger_manual_synthesis(current_admin: User = Depends(require_admin))
     except Exception as e:
         logger.error(f"Erreur lors de la génération manuelle: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+# =====================================
+# ENDPOINT - INITIALISATION SOURCES PAR DÉFAUT
+# =====================================
+
+@admin_router.post("/sources/initialize-defaults")
+async def initialize_default_sources(current_admin: User = Depends(require_admin)):
+    """Initialiser les sources par défaut (Le Monde, BFM, Blast)"""
+    try:
+        default_sources = [
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Le Monde",
+                "url": "https://www.lemonde.fr",
+                "description": "Journal français de référence couvrant l'actualité politique, économique et internationale",
+                "scraper_type": "lemonde",
+                "is_active": True,
+                "css_selectors": {
+                    "article": "article",
+                    "title": "h1, .article__title",
+                    "content": ".article__content, .article__paragraph"
+                },
+                "headers": {"User-Agent": "EasyGeo-Political-Analyzer/1.0"},
+                "custom_scraping_rules": {},
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "articles_scraped": 0,
+                "last_scrape": None
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "BFM Business",
+                "url": "https://www.bfmtv.com",
+                "description": "Chaîne d'information économique française spécialisée dans l'actualité financière et politique",
+                "scraper_type": "bfm",
+                "is_active": True,
+                "css_selectors": {
+                    "article": ".article",
+                    "title": "h1, .article-title",
+                    "content": ".article-body, .content"
+                },
+                "headers": {"User-Agent": "EasyGeo-Political-Analyzer/1.0"},
+                "custom_scraping_rules": {},
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "articles_scraped": 0,
+                "last_scrape": None
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Blast",
+                "url": "https://www.blast-info.fr",
+                "description": "Media indépendant d'investigation politique et sociale français",
+                "scraper_type": "blast",
+                "is_active": True,
+                "css_selectors": {
+                    "article": ".post, article",
+                    "title": "h1, .entry-title",
+                    "content": ".entry-content, .post-content"
+                },
+                "headers": {"User-Agent": "EasyGeo-Political-Analyzer/1.0"},
+                "custom_scraping_rules": {},
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "articles_scraped": 0,
+                "last_scrape": None
+            }
+        ]
+        
+        sources_added = 0
+        existing_sources = []
+        
+        for source_data in default_sources:
+            # Vérifier si la source existe déjà
+            existing = await news_sources_collection.find_one({"name": source_data["name"]})
+            if not existing:
+                await news_sources_collection.insert_one(source_data)
+                sources_added += 1
+            else:
+                existing_sources.append(source_data["name"])
+        
+        return {
+            "message": f"Initialisation terminée: {sources_added} nouvelles sources ajoutées",
+            "sources_added": sources_added,
+            "existing_sources": existing_sources,
+            "total_default_sources": len(default_sources)
+        }
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de l'initialisation des sources: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+# =====================================
+# ENDPOINT - INITIALISATION MODÈLE IA PAR DÉFAUT
+# =====================================
+
+@admin_router.post("/ai-models/initialize-defaults")
+async def initialize_default_ai_models(current_admin: User = Depends(require_admin)):
+    """Initialiser les modèles IA par défaut (Claude 3.5 Haiku)"""
+    try:
+        default_models = [
+            {
+                "id": str(uuid.uuid4()),
+                "name": "Claude 3.5 Haiku",
+                "provider": "anthropic",
+                "model_id": "claude-3-5-haiku-20241022",
+                "description": "Modèle Claude 3.5 Haiku d'Anthropic, optimisé pour l'analyse rapide et précise de contenu politique",
+                "is_active": True,
+                "api_key": os.environ.get('ANTHROPIC_API_KEY', ''),
+                "api_endpoint": "https://api.anthropic.com/v1/messages",
+                "parameters": {
+                    "max_tokens": 4000,
+                    "temperature": 0.3,
+                    "top_p": 0.9
+                },
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "usage_count": 0,
+                "last_used": None
+            }
+        ]
+        
+        models_added = 0
+        existing_models = []
+        
+        for model_data in default_models:
+            # Vérifier si le modèle existe déjà
+            existing = await ai_models_collection.find_one({"model_id": model_data["model_id"]})
+            if not existing:
+                await ai_models_collection.insert_one(model_data)
+                models_added += 1
+            else:
+                existing_models.append(model_data["name"])
+        
+        return {
+            "message": f"Initialisation terminée: {models_added} nouveaux modèles IA ajoutés",
+            "models_added": models_added,
+            "existing_models": existing_models,
+            "total_default_models": len(default_models)
+        }
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de l'initialisation des modèles IA: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
