@@ -76,6 +76,7 @@ app.add_middleware(
 
 # Include admin routes
 app.include_router(admin_router)
+app.include_router(auth_router)
 
 # Database client
 client = AsyncIOMotorClient(MONGO_URL)
