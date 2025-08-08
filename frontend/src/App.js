@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import Cookies from 'js-cookie';
 
 // Import des composants d'authentification
 import { AuthProvider, useAuth } from './AuthContext';
