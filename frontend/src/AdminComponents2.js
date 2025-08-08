@@ -363,8 +363,10 @@ export const GlossaryManager = () => {
 // COMPOSANT CONFIGURATION SYSTÈME
 // ===================================
 export const SystemConfigManager = () => {
+  const { token } = useAuth();
   const [config, setConfig] = useState({});
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     scraping_frequency_hours: 1,
     synthesis_times: ['09:00', '15:00', '20:00'],
@@ -376,6 +378,15 @@ export const SystemConfigManager = () => {
     notification_email: '',
     data_retention_days: 365
   });
+
+  // Fonction utilitaire pour obtenir les headers d'authentification
+  const getAuthHeaders = () => {
+    const authToken = token || Cookies.get('easygeo_token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken || ''}`
+    };
+  };
 
   // Charger la configuration
   const loadConfig = async () => {
