@@ -17,8 +17,6 @@ function AppContent() {
   const [sourcesStatus, setSourcesStatus] = useState([]);
   const [glossary, setGlossary] = useState([]);
   
-  // États pour l'administration
-  const [isAdminMode, setIsAdminMode] = useState(false);
   
   // États pour la modal des articles par source
   const [showSourceArticles, setShowSourceArticles] = useState(false);
