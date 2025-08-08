@@ -7,7 +7,7 @@ import { AuthModal, AuthButton, AuthBanner, PremiumBadge } from './AuthComponent
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
-function App() {
+function AppContent() {
   const [activeTab, setActiveTab] = useState('today');
   const [loading, setLoading] = useState(false);
   
