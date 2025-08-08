@@ -27,6 +27,7 @@ daily_syntheses_collection = db.daily_syntheses
 scraping_config_collection = db.scraping_config
 config_collection = db.admin_config
 ai_models_collection = db.ai_models
+glossary_collection = db.glossary
 
 # Router
 admin_router = APIRouter(prefix="/api/admin", tags=["Administration"])
