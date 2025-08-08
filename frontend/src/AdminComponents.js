@@ -393,10 +393,7 @@ export const AIModelsManager = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/ai-models`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(formData)
       });
 
