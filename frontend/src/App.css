@@ -642,8 +642,94 @@ body {
   border-left: 3px solid var(--primary-color);
 }
 
-/* Tooltips pour les termes du glossaire */
-.glossary-term {
+/* Mise en forme du contenu des synthèses */
+.content-text {
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.content-text h4 {
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 2rem 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.content-text h4:first-child {
+  margin-top: 0;
+}
+
+.content-text h5 {
+  color: var(--secondary-color);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem 0;
+  position: relative;
+  padding-left: 1rem;
+}
+
+.content-text h5:before {
+  content: "▶";
+  color: var(--primary-color);
+  position: absolute;
+  left: 0;
+  font-size: 0.8rem;
+}
+
+.content-text p {
+  margin-bottom: 1.25rem;
+  text-align: justify;
+  color: var(--text-primary);
+}
+
+.content-text ul {
+  margin: 1rem 0 1.5rem 1.5rem;
+  padding: 0;
+}
+
+.content-text li {
+  margin-bottom: 0.75rem;
+  position: relative;
+  list-style: none;
+  padding-left: 1.5rem;
+  color: var(--text-primary);
+}
+
+.content-text li:before {
+  content: "•";
+  color: var(--primary-color);
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  font-size: 1.2rem;
+}
+
+/* Améliorer l'espacement des sections */
+.synthesis-content {
+  background: var(--surface-color);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+.synthesis-content h3 {
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border-bottom: 3px solid rgba(37, 99, 235, 0.2);
+  padding-bottom: 0.75rem;
+}
+
+/* Tooltips pour les termes du glossaire dans le contenu */
+.content-text .glossary-term {
   background: rgba(37, 99, 235, 0.1);
   color: var(--primary-color);
   padding: 0.1rem 0.3rem;
@@ -651,6 +737,12 @@ body {
   cursor: help;
   border-bottom: 1px dotted var(--primary-color);
   font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.content-text .glossary-term:hover {
+  background: rgba(37, 99, 235, 0.2);
+  transform: scale(1.05);
 }
 
 /* Footer */
