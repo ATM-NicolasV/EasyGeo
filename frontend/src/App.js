@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
+// Import des composants d'authentification
+import { AuthProvider, useAuth } from './AuthContext';
+import { AuthModal, AuthButton, AuthBanner, PremiumBadge } from './AuthComponents';
+
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
 function App() {
