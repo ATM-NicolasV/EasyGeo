@@ -259,6 +259,36 @@ async def get_recent_syntheses(limit: int = 10):
     
     return {"syntheses": syntheses}
 
+@admin_router.get("/articles/by-source")
+async def get_articles_by_source(source: str, limit: int = 50):
+    """Récupérer les articles d'une source spécifique"""
+    
+    articles = []
+    cursor = scraped_articles_collection.find({
+        "source": source
+    }).sort("scraped_at", -1).limit(limit)
+    
+    async for article in cursor:
+        if "_id" in article:
+            del article["_id"]
+        
+        # Formater l'article pour l'affichage
+        articles.append({
+            "id": article.get("id"),
+            "title": article.get("title"),
+            "url": article.get("url"),
+            "content": article.get("content", "")[:200] + "..." if article.get("content") else "",
+            "scraped_at": article.get("scraped_at"),
+            "is_political": article.get("is_political", False),
+            "source": article.get("source")
+        })
+    
+    return {
+        "articles": articles,
+        "source": source,
+        "total": len(articles)
+    }
+
 # Endpoints - Actions manuelles
 @admin_router.post("/scrape/manual")
 async def trigger_manual_scraping():
