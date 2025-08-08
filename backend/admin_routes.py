@@ -53,8 +53,8 @@ class NewsSourceUpdate(BaseModel):
 
 # Endpoints - Gestion des sources
 @admin_router.post("/sources")
-async def add_news_source(source: NewsSource):
-    """Ajouter une nouvelle source d'actualités"""
+async def add_news_source(source: NewsSource, current_admin: User = Depends(require_admin)):
+    """Ajouter une nouvelle source d'actualités - Admin uniquement"""
     
     # Vérifier si la source existe déjà
     existing = await news_sources_collection.find_one({"url": source.url})
