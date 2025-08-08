@@ -122,15 +122,18 @@ backend:
 
   - task: "API Endpoints Refondus"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py, admin_routes.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Refonte complète des endpoints: /api/daily-synthesis, /api/daily-syntheses, /api/sources-status, routes admin complètes"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Tous les endpoints refondus fonctionnent parfaitement. /api/daily-synthesis: récupération synthèse du jour OK. /api/daily-syntheses: historique (3 synthèses) OK. /api/sources-status: statut des 3 sources OK. Routes admin complètes testées avec authentification. Nouveaux endpoints d'administration avancés tous fonctionnels."
 
   - task: "Claude AI Integration"
     implemented: true
