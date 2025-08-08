@@ -334,9 +334,11 @@ export const SourcesManager = () => {
 // COMPOSANT GESTION DES MODÈLES IA
 // ===================================
 export const AIModelsManager = () => {
+  const { token } = useAuth();
   const [aiModels, setAIModels] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     provider: 'anthropic',
@@ -347,6 +349,15 @@ export const AIModelsManager = () => {
     is_active: true,
     parameters: {}
   });
+
+  // Fonction utilitaire pour obtenir les headers d'authentification
+  const getAuthHeaders = () => {
+    const authToken = token || Cookies.get('easygeo_token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken || ''}`
+    };
+  };
 
   // Charger les modèles IA
   const loadAIModels = async () => {
