@@ -726,6 +726,9 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* Modal pour les articles par source */}
+      <SourceArticlesModal />
     </div>
   );
 }
