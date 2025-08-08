@@ -108,30 +108,34 @@ function App() {
     }
   };
 
-  const triggerManualSynthesis = async () => {
+  const loadSourceArticles = async (sourceName) => {
     try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/admin/synthesis/manual`, { 
-        method: 'POST' 
-      });
+      setLoadingSourceArticles(true);
+      setSelectedSourceName(sourceName);
+      
+      const response = await fetch(`${API_BASE_URL}/api/admin/articles/by-source?source=${encodeURIComponent(sourceName)}&limit=50`);
       
       if (!response.ok) {
         throw new Error(`Erreur HTTP: ${response.status}`);
       }
       
       const data = await response.json();
-      alert(`Synthèse générée avec succès !\n${data.articles_analyzed} articles analysés\nSynthèse ID: ${data.synthesis_id}`);
-      
-      // Actualiser les données
-      await loadTodaySynthesis();
-      await loadSynthesisHistory();
+      setSelectedSourceArticles(data.articles || []);
+      setShowSourceArticles(true);
       
     } catch (error) {
-      console.error('Erreur lors de la synthèse manuelle:', error);
-      alert(`Erreur lors de la génération de synthèse: ${error.message}`);
+      console.error('Erreur lors du chargement des articles:', error);
+      alert(`Erreur lors du chargement des articles: ${error.message}`);
+      setSelectedSourceArticles([]);
     } finally {
-      setLoading(false);
+      setLoadingSourceArticles(false);
     }
+  };
+
+  const closeSourceArticlesModal = () => {
+    setShowSourceArticles(false);
+    setSelectedSourceArticles([]);
+    setSelectedSourceName('');
   };
 
   const formatSynthesisContent = (content) => {
