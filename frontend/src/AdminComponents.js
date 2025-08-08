@@ -362,11 +362,22 @@ export const AIModelsManager = () => {
   // Charger les modèles IA
   const loadAIModels = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/ai-models`);
-      const data = await response.json();
-      setAIModels(data.ai_models || []);
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/api/admin/ai-models`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAIModels(data.ai_models || []);
+      } else if (response.status === 401) {
+        setError('Non autorisé - veuillez vous reconnecter');
+      } else {
+        setError(`Erreur: ${response.status}`);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des modèles IA:', error);
+      setError('Erreur de connexion');
     }
   };
 
