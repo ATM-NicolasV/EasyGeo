@@ -196,6 +196,8 @@ export const AuthProvider = ({ children }) => {
       email: user.email,
       subscriptionType: user.subscription_type,
       isPremium: user.is_premium,
+      isAdmin: user.is_admin,
+      role: user.role,
       createdAt: user.created_at,
       lastLogin: user.last_login
     } : null
