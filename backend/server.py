@@ -340,6 +340,11 @@ async def get_synthesis_history(current_user: Optional[User] = Depends(get_optio
             cursor = daily_syntheses_collection.find().sort("created_at", -1).limit(1)
             latest_synthesis = await cursor.to_list(length=1)
             
+            # Nettoyer les ObjectId MongoDB
+            for synthesis in latest_synthesis:
+                if "_id" in synthesis:
+                    del synthesis["_id"]
+            
             return {
                 "syntheses": latest_synthesis,
                 "user_type": "free",
@@ -357,6 +362,7 @@ async def get_synthesis_history(current_user: Optional[User] = Depends(get_optio
         cursor = daily_syntheses_collection.find().sort("created_at", -1).limit(50)
         syntheses = await cursor.to_list(length=None)
         
+        # Nettoyer les ObjectId MongoDB
         for synthesis in syntheses:
             if "_id" in synthesis:
                 del synthesis["_id"]
