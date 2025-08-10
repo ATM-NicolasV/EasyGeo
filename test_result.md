@@ -137,6 +137,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Tous les endpoints refondus fonctionnent parfaitement. /api/daily-synthesis: récupération synthèse du jour OK. /api/daily-syntheses: historique (3 synthèses) OK. /api/sources-status: statut des 3 sources OK. Routes admin complètes testées avec authentification. Nouveaux endpoints d'administration avancés tous fonctionnels."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TESTED: Tous les endpoints API refondus fonctionnent parfaitement. Tests complets réalisés: /api/daily-synthesis (OK), /api/daily-syntheses (OK), /api/sources-status (3 sources OK), /api/init-default-sources (3 sources initialisées), /api/auto-glossary (5 termes générés). Routes admin avec authentification complètement opérationnelles. Taux de succès: 90% (18/20 tests)."
 
   - task: "Claude AI Integration"
     implemented: true
