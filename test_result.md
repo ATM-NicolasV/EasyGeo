@@ -155,6 +155,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Claude AI integration working perfectly. Successfully analyzed real news content from BBC and Le Monde using claude-3-5-haiku-20241022 model. Generated neutral synthesis with reliability scoring."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TESTED: Claude AI integration entièrement fonctionnelle. Clé API Anthropic configurée et opérationnelle. Modèle claude-3-5-haiku-20241022 testé avec succès. Génération de synthèses IA personnalisées validée. Système d'analyse de contenu politique et géopolitique pleinement opérationnel."
 
   - task: "Content Extraction from URLs"
     implemented: true
