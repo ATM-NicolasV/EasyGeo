@@ -119,6 +119,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Système de scraping automatique fonctionnel. Test manuel de scraping: 38 articles trouvés, 14 nouveaux articles ajoutés. Sources par défaut initialisées (Le Monde, BFM, Blast). Génération automatique de synthèse: 73 articles analysés avec succès."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TESTED: Système de scraping automatique entièrement fonctionnel. Test manuel réussi: 41 articles trouvés et ajoutés avec succès. Sources par défaut (Le Monde, BFM, Blast) correctement initialisées et opérationnelles. Filtrage politique/géopolitique/complotisme actif."
 
   - task: "API Endpoints Refondus"
     implemented: true
