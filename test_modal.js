@@ -5,7 +5,7 @@ console.log("🧪 Test de la modal des articles par source");
 const testModalFunctionality = async () => {
   try {
     // Tester l'endpoint backend
-    const response = await fetch('https://072fc210-f8b8-4e4d-adb8-7855593d068a.preview.emergentagent.com/api/admin/articles/by-source?source=Le%20Monde&limit=3');
+    const response = await fetch('https://6e952090-9d62-4c17-b029-38c7f1907104.preview.emergentagent.com/api/admin/articles/by-source?source=Le%20Monde&limit=3');
     const data = await response.json();
     
     if (data.articles && data.articles.length > 0) {
