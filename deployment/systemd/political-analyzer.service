@@ -1,0 +1,35 @@
+[Unit]
+Description=Political Analyzer Application
+After=network.target mongodb.service
+Wants=mongodb.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/political-analyzer/app
+Environment=PYTHONPATH=/opt/political-analyzer/app/backend
+Environment=NODE_ENV=production
+
+# Backend service
+ExecStart=/opt/political-analyzer/app/backend/venv/bin/python -m uvicorn server:app --host 0.0.0.0 --port 8001
+
+# Restart policy
+Restart=always
+RestartSec=5
+StartLimitBurst=3
+StartLimitIntervalSec=10
+
+# Logs
+StandardOutput=append:/opt/political-analyzer/logs/backend.log
+StandardError=append:/opt/political-analyzer/logs/backend.error.log
+
+# Security
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/political-analyzer
+
+[Install]
+WantedBy=multi-user.target
