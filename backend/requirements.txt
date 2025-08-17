@@ -3,8 +3,8 @@ uvicorn==0.24.0
 motor
 pymongo
 python-dotenv
-emergentintegrations
 litellm
+tokenizers==0.20.0
 httpx
 python-multipart
 beautifulsoup4

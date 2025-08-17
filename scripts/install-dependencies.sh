@@ -102,40 +102,41 @@ if ! command -v yarn &> /dev/null; then
 fi
 log "Yarn $(yarn --version) installé ✓"
 
-# MongoDB 6.0+
-log "Installation de MongoDB 6.0+..."
-if ! command -v mongod &> /dev/null; then
-    # Import GPG key
-    curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-6.0.gpg
-
-    # Add repository
-    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/6.0 multiverse" > /etc/apt/sources.list.d/mongodb-org-6.0.list
-
-    # Install
-    apt update
-    apt install -y mongodb-org
-
-    # Configure
-    systemctl enable mongod
-    systemctl start mongod
-fi
-
+# MongoDB
 if systemctl is-active --quiet mongod; then
-    log "MongoDB installé et démarré ✓"
+    log "MongoDB est déjà installé et actif. On passe à la suite. ✓" 
 else
-    error "Problème avec MongoDB"
-    exit 1
+    log "Installation de MongoDB..."
+    if lscpu | grep -qi "avx"; then
+        # --- Processeur compatible AVX : Installation de MongoDB 6.0 ---
+        log "CPU compatible AVX détecté. Installation de MongoDB 6.0..."
+        curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-6.0.gpg
+        echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list # <-- CORRECTION: Ligne complète
+        apt-get update
+        apt-get install -y mongodb-org
+    else
+        # --- Processeur non compatible AVX : Installation de MongoDB 4.4 ---
+        log "CPU non compatible AVX détecté. Installation de MongoDB 4.4..."
+        wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list # <-- CORRECTION: Ligne complète
+        apt-get update
+        apt-get install -y mongodb-org=4.4.29 mongodb-org-server=4.4.29 mongodb-org-shell=4.4.29 mongodb-org-mongos=4.4.29 mongodb-org-tools=4.4.29 # <-- CORRECTION: Ligne complète
+        
+        log "Blocage des paquets MongoDB à la version 4.4 pour éviter les mises à jour."
+        echo "mongodb-org hold" | dpkg --set-selections
+        echo "mongodb-org-server hold" | dpkg --set-selections
+        echo "mongodb-org-shell hold" | dpkg --set-selections
+        echo "mongodb-org-mongos hold" | dpkg --set-selections
+        echo "mongodb-org-tools hold" | dpkg --set-selections
+    fi
 fi
 
 # Nginx
 log "Installation de Nginx..."
 apt install -y nginx
-
-# Configuration de base Nginx
 if [ ! -f "/etc/nginx/nginx.conf.backup" ]; then
     cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
 fi
-
 systemctl enable nginx
 systemctl start nginx
 log "Nginx installé ✓"
@@ -143,7 +144,6 @@ log "Nginx installé ✓"
 # Supervisor
 log "Installation de Supervisor..."
 apt install -y supervisor
-
 systemctl enable supervisor
 systemctl start supervisor
 log "Supervisor installé ✓"
@@ -156,17 +156,14 @@ log "Certbot installé ✓"
 # UFW Firewall
 log "Configuration du firewall UFW..."
 apt install -y ufw
-
-# Configuration de base
+warn "La commande 'ufw reset' va effacer toutes les règles existantes."
 ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
-
-# Autoriser SSH, HTTP et HTTPS
 ufw allow ssh
 ufw allow 'Nginx Full'
-ufw allow 27017  # MongoDB (à restreindre en production)
-
+ufw allow from 127.0.0.1 to any port 27017 # <--  Plus sécurisé, n'autorise que le local pour Mongo
+ufw --force enable
 log "Firewall configuré ✓"
 
 # Utilisateur www-data
@@ -182,49 +179,26 @@ chown -R www-data:www-data /opt/political-analyzer
 
 # Optimisations système
 log "Optimisations système..."
-
 # Augmenter les limites de fichiers ouverts
-cat >> /etc/security/limits.conf << EOF
+if ! grep -q "www-data soft nofile 65536" /etc/security/limits.conf; then
+    cat >> /etc/security/limits.conf << EOF
 
 # Limites pour l'application politique
 www-data soft nofile 65536
 www-data hard nofile 65536
 EOF
+fi
 
-# Optimisations MongoDB
-cat > /etc/mongod.conf << EOF
-# Configuration MongoDB pour Political Analyzer
+#  On ne modifie que la ligne bindIp dans mongod.conf.
+log "Configuration de MongoDB pour écouter sur localhost uniquement..."
+if grep -q "bindIp: 127.0.0.1" /etc/mongod.conf; then
+    log "bindIp est déjà configuré dans mongod.conf."
+else
+    sed -i 's/bindIp: .*/bindIp: 127.0.0.1/' /etc/mongod.conf
+fi
 
-storage:
-  dbPath: /var/lib/mongodb
-  journal:
-    enabled: true
-
-systemLog:
-  destination: file
-  logAppend: true
-  path: /var/log/mongodb/mongod.log
-  logRotate: rename
-
-net:
-  port: 27017
-  bindIp: 127.0.0.1
-
-processManagement:
-  fork: true
-  pidFilePath: /var/run/mongodb/mongod.pid
-
-# Sécurité
-security:
-  authorization: disabled  # À activer avec des utilisateurs en production
-
-# Performance
-operationProfiling:
-  slowOpThresholdMs: 100
-  mode: slowOp
-EOF
-
-# Redémarrer MongoDB avec la nouvelle configuration
+# Démarrer/Redémarrer MongoDB avec la configuration
+systemctl enable mongod
 systemctl restart mongod
 
 # Configuration logrotate
@@ -238,29 +212,28 @@ cat > /etc/logrotate.d/political-analyzer << EOF
     delaycompress
     notifempty
     copytruncate
-    postrotate
-        supervisorctl restart all > /dev/null 2>&1 || true
-    endscript
 }
 EOF
 
 # Tâche cron pour maintenance
 log "Configuration des tâches de maintenance..."
-(crontab -l -u www-data 2>/dev/null || true; echo "# Political Analyzer maintenance") | crontab -u www-data -
-(crontab -l -u www-data; echo "0 2 * * * /opt/political-analyzer/scripts/backup-mongodb.sh >> /opt/political-analyzer/logs/backup.log 2>&1") | crontab -u www-data -
-(crontab -l -u www-data; echo "0 4 * * 0 /opt/political-analyzer/scripts/cleanup-logs.sh >> /opt/political-analyzer/logs/cleanup.log 2>&1") | crontab -u www-data -
+CRON_FILE="/etc/cron.d/political-analyzer"
+cat > "$CRON_FILE" << EOF
+# Tâches de maintenance pour Political Analyzer
+0 2 * * * www-data /opt/political-analyzer/scripts/backup-mongodb.sh >> /opt/political-analyzer/logs/backup.log 2>&1
+0 4 * * 0 www-data /opt/political-analyzer/scripts/cleanup-logs.sh >> /opt/political-analyzer/logs/cleanup.log 2>&1
+EOF
+chmod 0644 "$CRON_FILE"
 
 # Script de nettoyage des logs
 cat > /opt/political-analyzer/scripts/cleanup-logs.sh << 'EOF'
 #!/bin/bash
 # Nettoyage hebdomadaire des logs volumineux
-
 LOG_DIR="/opt/political-analyzer/logs"
 find "$LOG_DIR" -name "*.log" -size +100M -exec truncate -s 50M {} \;
 find "$LOG_DIR" -name "*.log.*" -mtime +7 -delete
 echo "$(date): Logs nettoyés"
 EOF
-
 chmod +x /opt/political-analyzer/scripts/cleanup-logs.sh
 chown www-data:www-data /opt/political-analyzer/scripts/cleanup-logs.sh
 
@@ -282,7 +255,7 @@ info "├── Nginx: $(nginx -v 2>&1)"
 info "└── Supervisor: $(supervisord --version)"
 echo ""
 info "🔧 Services démarrés:"
-info "├── MongoDB (port 27017)"
+info "├── MongoDB (port 27017, local seulement)"
 info "├── Nginx (ports 80, 443)"
 info "└── Supervisor"
 echo ""
@@ -300,3 +273,37 @@ warn "4. Configurez votre domaine dans Nginx"
 warn "5. Configurez SSL avec: certbot --nginx -d votre-domaine.com"
 echo ""
 log "🎉 Serveur prêt pour le déploiement de l'Application d'Analyse Politique!"
+
+server {
+    listen 80;
+    server_name jordy.codesieg.fr;
+    root /var/www/html/jordi/htdocs/;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+
+    index index.html index.htm index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}

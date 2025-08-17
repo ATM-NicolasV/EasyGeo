@@ -142,7 +142,7 @@ fi
 
 # Installation des dépendances
 log "Installation des dépendances Node.js..."
-yarn install --frozen-lockfile
+yarn install
 
 # Vérification du fichier .env
 if [ ! -f ".env" ]; then
